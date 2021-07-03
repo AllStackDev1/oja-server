@@ -4,8 +4,10 @@ import {
   IsString,
   IsNotEmpty,
   MaxLength,
-  MinLength
+  MinLength,
+  IsPhoneNumber
 } from 'class-validator'
+import { IAddress } from 'interfaces'
 
 export class CreateUserDto {
   @IsString()
@@ -24,9 +26,17 @@ export class CreateUserDto {
 
   @MinLength(8)
   @MaxLength(20)
-  @Matches(/((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/, {
-    message: 'Password is too weak'
-  })
+  @Matches(/((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/)
   @IsNotEmpty()
   readonly password: string
+
+  @IsNotEmpty()
+  @IsPhoneNumber()
+  readonly phoneNumber: string
+
+  @IsNotEmpty()
+  readonly address: IAddress
+
+  @IsNotEmpty()
+  readonly userName: string
 }

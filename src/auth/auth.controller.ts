@@ -14,13 +14,22 @@ import { LoginStatus, RegistrationStatus } from 'interfaces'
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  /**
+   *
+   * @description req.body.payload contains the fields required to create a user record
+   * @param payload.firstName
+   * @param payload.lastName
+   * @param payload.userName
+   * @param payload.email
+   * @param payload.password
+   * @param payload.address.country
+   * @returns HTTP response
+   */
   @Post('register')
   public async register(
-    @Body() createUserDto: CreateUserDto
+    @Body() payload: CreateUserDto
   ): Promise<RegistrationStatus> {
-    const result: RegistrationStatus = await this.authService.register(
-      createUserDto
-    )
+    const result: RegistrationStatus = await this.authService.register(payload)
     if (!result.success) {
       throw new HttpException(result.message, HttpStatus.BAD_REQUEST)
     }
@@ -28,7 +37,7 @@ export class AuthController {
   }
 
   @Post('login')
-  public async login(@Body() loginUserDto: LoginUserDto): Promise<LoginStatus> {
-    return await this.authService.login(loginUserDto)
+  public async login(@Body() payload: LoginUserDto): Promise<LoginStatus> {
+    return await this.authService.login(payload)
   }
 }

@@ -1,5 +1,8 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
 import { Document } from 'mongoose'
+import * as _ from 'lodash'
+import * as bcrypt from 'bcrypt'
+import { saltLength } from 'app.environment'
 
 export type UserDocument = User & Document
 
@@ -17,6 +20,14 @@ export class User {
     trim: true,
     required: true
   })
+  userName: string
+
+  @Prop({
+    unique: true,
+    lowercase: true,
+    trim: true,
+    required: true
+  })
   email: string
 
   @Prop({ minlength: 8, required: true })
@@ -25,9 +36,7 @@ export class User {
   @Prop({ required: true })
   phoneNumber: string
 
-  @Prop({
-    type: [{ country: { type: String, required: true } }]
-  })
+  @Prop({ type: {}, required: true })
   address: {
     street: string
     city: string
@@ -40,6 +49,40 @@ export class User {
 
   @Prop()
   dateOfBirth: Date
+
+  @Prop({ type: String, enum: ['ACTIVE', 'INACTIVE'], default: 'INACTIVE' })
+  status: string
 }
 
-export const UserSchema = SchemaFactory.createForClass(User)
+const schema = SchemaFactory.createForClass(User)
+
+schema.pre<UserDocument>('save', function (this: UserDocument, next) {
+  if (this.isModified('firstName') || this.isModified('lastName')) {
+    this.firstName = _.upperFirst(this.firstName.toLowerCase())
+    this.lastName = _.upperFirst(this.lastName.toLowerCase())
+  }
+
+  // encrypt password
+  if (this.isModified('password')) {
+    this.password = bcrypt.hashSync(
+      this.password,
+      bcrypt.genSaltSync(parseInt(saltLength))
+    )
+  }
+
+  next()
+})
+
+/**
+ * @summary method will remove the user password from the object body
+ */
+schema.methods.toJSON = function () {
+  return _.omit(this.toObject(), 'password')
+}
+
+// schema method for comparing password
+schema.methods.comparePassword = function (this: UserDocument, password) {
+  return bcrypt.compareSync(password, this.password)
+}
+
+export const UserSchema = schema

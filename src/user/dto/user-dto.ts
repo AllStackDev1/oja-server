@@ -1,33 +1,12 @@
-import { IsNotEmpty, IsEmail, IsMobilePhone } from 'class-validator'
 import { PartialType } from '@nestjs/mapped-types'
 import { CreateUserDto } from './create-user.dto'
-
+import { IAddress } from 'interfaces'
 export class UserDto extends PartialType(CreateUserDto) {
-  @IsNotEmpty()
-  firstName: string
+  readonly avatar: string
 
-  @IsNotEmpty()
-  lastName: string
+  readonly dateOfBirth: Date
 
-  @IsEmail()
-  @IsNotEmpty()
-  readonly email: string
+  readonly address: IAddress
 
-  password: string
-
-  @IsNotEmpty()
-  @IsMobilePhone()
-  phoneNumber: string
-
-  avatar: string
-
-  dateOfBirth: Date
-
-  @IsNotEmpty()
-  address: {
-    street: string
-    city: string
-    state: string
-    country: string
-  }
+  readonly status: string
 }
