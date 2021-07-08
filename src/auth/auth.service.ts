@@ -1,78 +1,127 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
+import { EventEmitter2, OnEvent } from '@nestjs/event-emitter'
+import { InjectTwilio, TwilioClient } from 'nestjs-twilio'
 import { MailerService } from '@nestjs-modules/mailer'
 import { JwtService } from '@nestjs/jwt'
 
 import { CreateUserDto } from 'user/dto/create-user.dto'
 import { UserDto } from 'user/dto/user-dto'
 import { UserService } from 'user/user.service'
+import { TermiiService } from './termii'
 import { secret, expiresIn, clientUrl } from 'app.environment'
 import { LoginUserDto } from 'user/dto/login-user.dto'
-import { JwtPayload, LoginStatus, RegistrationStatus } from 'interfaces'
-import { EventEmitter2, OnEvent } from '@nestjs/event-emitter'
-import { UserCreatedEvent } from 'user/dto/user-created-event.dto'
+import {
+  JwtPayload,
+  OtpVerificationStatus,
+  RegistrationStatus,
+  ResendOtpStatus,
+  StatusEnum
+} from 'interfaces'
+import { PhoneNumberVerifiedEvent } from 'event'
+import { VerifyOtpPayloadDto, ResendOtpPayloadDto } from './dto'
 
 @Injectable()
 export class AuthService {
   constructor(
+    @InjectTwilio() private readonly twilioClient: TwilioClient,
     private readonly mailerService: MailerService,
+    private readonly eventEmitter: EventEmitter2,
+    private readonly termiiService: TermiiService,
     private readonly userService: UserService,
-    private readonly jwtService: JwtService,
-    private readonly eventEmitter: EventEmitter2
+    private readonly jwtService: JwtService
   ) {}
 
-  async register(userDto: CreateUserDto): Promise<RegistrationStatus> {
+  async register(payload: CreateUserDto): Promise<RegistrationStatus> {
     let response: RegistrationStatus = {
       success: true,
       message: 'user registered successfully'
     }
     try {
       // check to see if email already exist
-      const user = await this.userService.findOne({ email: userDto.email })
+      let user = await this.userService.findOne({ email: payload.email })
       if (user) throw new Error('Email already registered')
-      response.data = await this.userService.create(userDto)
-      // generate token for email verification
-      const { accessToken } = this._createToken(response.data)
-      const userCreatedEvent = new UserCreatedEvent()
-      userCreatedEvent.userName = response.data.userName
-      userCreatedEvent.email = response.data.email
-      userCreatedEvent.fullName =
-        response.data.firstName + ' ' + response.data.lastName
-      userCreatedEvent.link = `${clientUrl}/auth/verify/${accessToken}`
-      // call user created event which sends verification email
-      this.eventEmitter.emit('user.created', userCreatedEvent)
+      user = await this.userService.create(payload)
+      const otpResponse = await this.termiiService.sendOtp(user.phoneNumber)
+      response.data = user
+      response.otpResponse = otpResponse
     } catch (err) {
       response = { success: false, message: err.message }
     }
     return response
   }
 
-  async login(loginUserDto: LoginUserDto): Promise<LoginStatus> {
-    const payloadError = {
-      mgs: 'The email or password provide is incorrect',
-      status: HttpStatus.BAD_REQUEST
+  async verifyOtp(
+    payload: VerifyOtpPayloadDto
+  ): Promise<OtpVerificationStatus> {
+    const response: OtpVerificationStatus = {
+      success: true,
+      message: 'Verification successful',
+      user: null,
+      authToken: null
     }
-    // find user in db
-    const user = await this.userService.findOne({ email: loginUserDto.email })
-    // user not found
-    if (!user) {
-      throw new HttpException(payloadError.mgs, payloadError.status)
-    }
-    // check user provided password
-    const isMatch = user.comparePassword(loginUserDto.password)
-    if (!isMatch) {
-      throw new HttpException(payloadError.mgs, payloadError.status)
-    }
-    // check to see if account is activated
-    if (user.status === 'INACTIVE') {
-      throw new HttpException(
-        'Account inactive, please activate',
-        payloadError.status
-      )
-    }
+    try {
+      // const twilioResponse = await this.twilioClient.verify
+      //   .services(twilioVerSId)
+      //   .verificationChecks.create(payload)
+      // if (twilioResponse.status !== 'approved') {
+      //   throw new Error('Could not verify code')
+      // }
+      // twilioResponse.to
+      const termiiResponse = await this.termiiService.verifyOtp(payload)
 
-    // generate and sign token
-    const token = this._createToken(user)
-    return { user, ...token }
+      // find a user with the phone number
+      response.user = await this.userService.findOne({
+        phoneNumber: termiiResponse.msisdn
+      })
+
+      // generate an auth token which will allow the user access into
+      // the application
+      const { accessToken } = this._createToken(response.user)
+
+      // add user and auth token to response data object
+      response.authToken = accessToken
+
+      // To make sure that user only receive this once we check
+      // if the user is already active, as this method wil be reused
+      // for subsequent otp verifications
+      if (response.user.status !== StatusEnum.ACTIVE) {
+        response.user.status = StatusEnum.ACTIVE
+        response.user.save()
+        // insatiate DTO class
+        const phoneNumberVerifiedEvent = new PhoneNumberVerifiedEvent()
+        // set up object
+        phoneNumberVerifiedEvent.email = response.user.email
+        phoneNumberVerifiedEvent.fullName = [
+          response.user.firstName,
+          response.user.lastModified
+        ].join(' ')
+        phoneNumberVerifiedEvent.link = `${clientUrl}/auth/verify-email/${accessToken}`
+        // emit phone number verified event
+        this.eventEmitter.emit(
+          'phone.number.verified.event',
+          phoneNumberVerifiedEvent
+        )
+      }
+    } catch (e) {
+      response.success = false
+      response.message = e.response?.data
+    }
+    return response
+  }
+
+  async resendOtp(payload: ResendOtpPayloadDto): Promise<ResendOtpStatus> {
+    let response: ResendOtpStatus = { success: true, message: null }
+    try {
+      // check to see if phone number belongs to an existing user
+      const user = await this.userService.findOne({
+        phoneNumber: payload.phoneNumber
+      })
+      if (!user) throw new Error('No user found')
+      response.message = await this.termiiService.sendOtp(user.phoneNumber)
+    } catch (err) {
+      response = { success: false, message: err.message }
+    }
+    return response
   }
 
   async validateUser(payload: JwtPayload): Promise<UserDto> {
@@ -83,6 +132,25 @@ export class AuthService {
     return user
   }
 
+  async login(payload: LoginUserDto): Promise<ResendOtpStatus> {
+    let response: ResendOtpStatus = { success: true, message: null }
+    try {
+      const incorrect = 'The email or password provide is incorrect'
+      // find user in db
+      const user = await this.userService.findOne({ email: payload.email })
+      // user not found
+      if (!user) throw new Error(incorrect)
+      // check user provided password
+      const isMatch = user.comparePassword(payload.password)
+      if (!isMatch) throw new Error(incorrect)
+
+      response.message = await this.termiiService.sendOtp(user.phoneNumber)
+    } catch (err) {
+      response = { success: false, message: err.message }
+    }
+    return response
+  }
+
   private _createToken({ email }: UserDto, exp = expiresIn): any {
     const user: JwtPayload = { username: email }
     const accessToken = this.jwtService
@@ -91,12 +159,13 @@ export class AuthService {
     return { expiresIn, accessToken }
   }
 
-  @OnEvent('user.created', { async: true })
-  private handleUserCreatedEvent(payload: UserCreatedEvent) {
-    this.mailerService
-      .sendMail({
+  @OnEvent('phone.number.verified.event', { async: true })
+  private async handlePhoneNumberVerifiedEvent(
+    payload: PhoneNumberVerifiedEvent
+  ) {
+    try {
+      const response = await this.mailerService.sendMail({
         to: payload.email,
-        // from:'',
         subject: 'Account Registration Successful ✔',
         template: './register',
         context: {
@@ -104,13 +173,11 @@ export class AuthService {
           fullName: payload.fullName
         }
       })
-      .then(success => {
-        // log success verification email sent to user
-        console.log(success)
-      })
-      .catch(err => {
-        // log error in sending verification email
-        console.log(err)
-      })
+      // log success verification email sent to user
+      console.log(response)
+    } catch (err) {
+      // log error in sending verification email
+      console.log(err)
+    }
   }
 }

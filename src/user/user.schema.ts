@@ -3,6 +3,7 @@ import { Document } from 'mongoose'
 import * as _ from 'lodash'
 import * as bcrypt from 'bcrypt'
 import { saltLength } from 'app.environment'
+import { StatusEnum } from 'interfaces'
 
 export type UserDocument = User & Document
 
@@ -23,17 +24,21 @@ export class User {
   userName: string
 
   @Prop({
-    unique: true,
-    lowercase: true,
     trim: true,
-    required: true
+    unique: true,
+    required: true,
+    lowercase: true
   })
   email: string
 
   @Prop({ minlength: 8, required: true })
   password: string
 
-  @Prop({ required: true })
+  @Prop({
+    trim: true,
+    unique: true,
+    required: true
+  })
   phoneNumber: string
 
   @Prop({ type: {}, required: true })
@@ -50,8 +55,11 @@ export class User {
   @Prop()
   dateOfBirth: Date
 
-  @Prop({ type: String, enum: ['ACTIVE', 'INACTIVE'], default: 'INACTIVE' })
+  @Prop({ type: String, enum: StatusEnum, default: StatusEnum.INACTIVE })
   status: string
+
+  @Prop({ default: false })
+  isEmailVerified: boolean
 }
 
 const schema = SchemaFactory.createForClass(User)

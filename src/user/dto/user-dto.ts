@@ -1,6 +1,6 @@
 import { PartialType } from '@nestjs/mapped-types'
 import { CreateUserDto } from './create-user.dto'
-import { IAddress } from 'interfaces'
+import { IAddress, StatusEnum } from 'interfaces'
 export class UserDto extends PartialType(CreateUserDto) {
   readonly avatar: string
 
@@ -8,5 +8,7 @@ export class UserDto extends PartialType(CreateUserDto) {
 
   readonly address: IAddress
 
-  readonly status: string
+  readonly status: StatusEnum
+
+  readonly isEmailVerified: boolean
 }
