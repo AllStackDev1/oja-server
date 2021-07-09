@@ -44,7 +44,7 @@ export class TermiiService {
   /**
    * @summary function to verify otp
    * @param payload.pinId  pin identifer
-   * @param payload.pin pin code
+   * @param payload.code pin code
    */
   async verifyOtp(payload: ITermiiVerifyOTP) {
     const response = await this.httpService
@@ -53,7 +53,7 @@ export class TermiiService {
         JSON.stringify({
           api_key: termiiKey,
           pin_id: payload.pinId,
-          pin: payload.pin
+          pin: payload.code
         }),
         {
           headers: this._headers

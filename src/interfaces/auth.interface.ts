@@ -8,19 +8,19 @@ export interface RegistrationStatus {
   success: boolean
   message: string
   data?: IUser
-  otpResponse?: string
+  otpResponse?: Record<string, string>
 }
 
 export interface ITermiiVerifyOTP {
   pinId: string
-  pin: string
+  code: string
 }
 
-export interface OtpVerificationStatus {
+export interface VerifyOtpStatus {
   success: boolean
   message: string
-  user: IUser
-  authToken: string
+  user?: IUser
+  authToken?: string
 }
 
 export interface ResendOtpStatus {

@@ -5,11 +5,8 @@ export class VerifyOtpPayloadDto {
   // @IsPhoneNumber()
   // readonly to: string
 
-  // @IsString()
-  // readonly code: string
-
   @IsString()
-  readonly pin: string
+  readonly code: string
 
   @IsString()
   readonly pinId: string

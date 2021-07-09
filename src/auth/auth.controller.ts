@@ -10,7 +10,7 @@ import { CreateUserDto } from 'user/dto/create-user.dto'
 import { LoginUserDto } from 'user/dto/login-user.dto'
 import {
   RegistrationStatus,
-  OtpVerificationStatus,
+  VerifyOtpStatus,
   ResendOtpStatus
 } from 'interfaces'
 import { VerifyOtpPayloadDto } from './dto/verify-otp.dto'
@@ -42,10 +42,8 @@ export class AuthController {
   @Post('verify-otp')
   public async verifyOtp(
     @Body() payload: VerifyOtpPayloadDto
-  ): Promise<OtpVerificationStatus> {
-    const result: OtpVerificationStatus = await this.authService.verifyOtp(
-      payload
-    )
+  ): Promise<VerifyOtpStatus> {
+    const result: VerifyOtpStatus = await this.authService.verifyOtp(payload)
 
     if (!result.success) {
       throw new HttpException(result.message, HttpStatus.BAD_REQUEST)

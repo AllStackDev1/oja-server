@@ -12,7 +12,7 @@ import { secret, expiresIn, clientUrl } from 'app.environment'
 import { LoginUserDto } from 'user/dto/login-user.dto'
 import {
   JwtPayload,
-  OtpVerificationStatus,
+  VerifyOtpStatus,
   RegistrationStatus,
   ResendOtpStatus,
   StatusEnum
@@ -34,7 +34,7 @@ export class AuthService {
   async register(payload: CreateUserDto): Promise<RegistrationStatus> {
     let response: RegistrationStatus = {
       success: true,
-      message: 'user registered successfully'
+      message: 'Account creation successful'
     }
     try {
       // check to see if email already exist
@@ -50,10 +50,8 @@ export class AuthService {
     return response
   }
 
-  async verifyOtp(
-    payload: VerifyOtpPayloadDto
-  ): Promise<OtpVerificationStatus> {
-    const response: OtpVerificationStatus = {
+  async verifyOtp(payload: VerifyOtpPayloadDto): Promise<VerifyOtpStatus> {
+    const response: VerifyOtpStatus = {
       success: true,
       message: 'Verification successful',
       user: null,
