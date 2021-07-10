@@ -53,7 +53,7 @@ export class AuthService {
   async verifyOtp(payload: VerifyOtpPayloadDto): Promise<VerifyOtpStatus> {
     const response: VerifyOtpStatus = {
       success: true,
-      message: 'Verification successful',
+      message: 'OTP Verification successful',
       user: null,
       authToken: null
     }
@@ -74,7 +74,10 @@ export class AuthService {
 
       // generate an auth token which will allow the user access into
       // the application
-      const { accessToken } = this._createToken(response.user)
+      const { accessToken } = this._createToken(
+        response.user,
+        payload.expiresIn
+      )
 
       // add user and auth token to response data object
       response.authToken = accessToken
@@ -84,7 +87,7 @@ export class AuthService {
       // for subsequent otp verifications
       if (response.user.status !== StatusEnum.ACTIVE) {
         response.user.status = StatusEnum.ACTIVE
-        response.user.save()
+        await response.user.save()
         // insatiate DTO class
         const phoneNumberVerifiedEvent = new PhoneNumberVerifiedEvent()
         // set up object
@@ -116,6 +119,23 @@ export class AuthService {
       })
       if (!user) throw new Error('No user found')
       response.message = await this.termiiService.sendOtp(user.phoneNumber)
+    } catch (err) {
+      response = { success: false, message: err.message }
+    }
+    return response
+  }
+
+  async verifyEmail(payload: string): Promise<any> {
+    let response = { success: true, message: 'Email verification successful' }
+    try {
+      // decode payload using jwt service decode
+      const decoded: any = this.jwtService.decode(payload)
+      // check to see if phone number belongs to an existing user
+      const user = await this.userService.findOne({ email: decoded.username })
+      if (!user) throw new Error('Unexpected error occurred')
+      user.isEmailVerified = true
+      // TODO: add email to mailing list if needed
+      await user.save()
     } catch (err) {
       response = { success: false, message: err.message }
     }

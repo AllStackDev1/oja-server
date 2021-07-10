@@ -22,7 +22,7 @@ export interface IUser extends Document {
   dateOfBirth: Date
   phoneNumber: string
   isEmailVerified: boolean
-  save(p?: any): void
+  save(p?: any): Promise<any>
   comparePassword(p: string): boolean
 }
 

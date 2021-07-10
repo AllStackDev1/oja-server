@@ -10,4 +10,6 @@ export class VerifyOtpPayloadDto {
 
   @IsString()
   readonly pinId: string
+
+  readonly expiresIn: string
 }

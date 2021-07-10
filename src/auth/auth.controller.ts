@@ -1,9 +1,11 @@
 import {
-  Controller,
   Post,
   Body,
-  HttpException,
-  HttpStatus
+  Param,
+  Patch,
+  HttpStatus,
+  Controller,
+  HttpException
 } from '@nestjs/common'
 import { AuthService } from './auth.service'
 import { CreateUserDto } from 'user/dto/create-user.dto'
@@ -15,15 +17,12 @@ import {
 } from 'interfaces'
 import { VerifyOtpPayloadDto } from './dto/verify-otp.dto'
 import { ResendOtpPayloadDto } from './dto/resend-otp.dto'
+import { VerifyEmailPayloadDto } from './dto/verify-email'
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  /**
-   * @description req.body.payload contains the fields required to create a user record
-   * @returns HTTP response
-   */
   @Post('register')
   public async register(
     @Body() payload: CreateUserDto
@@ -35,10 +34,6 @@ export class AuthController {
     return result
   }
 
-  /**
-   * @description req.body.payload contains the fields required to create a user record
-   * @returns HTTP response
-   */
   @Post('verify-otp')
   public async verifyOtp(
     @Body() payload: VerifyOtpPayloadDto
@@ -51,15 +46,23 @@ export class AuthController {
     return result
   }
 
-  /**
-   * @description req.body.payload contains the fields required to create a user record
-   * @returns HTTP response
-   */
   @Post('resend-otp')
   public async resendOtp(
     @Body() payload: ResendOtpPayloadDto
   ): Promise<ResendOtpStatus> {
     const result = await this.authService.resendOtp(payload)
+
+    if (!result.success) {
+      throw new HttpException(result.message, HttpStatus.BAD_REQUEST)
+    }
+    return result
+  }
+
+  @Patch('verify-email/:token')
+  public async verifyEmail(
+    @Param() params: VerifyEmailPayloadDto
+  ): Promise<any> {
+    const result = await this.authService.verifyEmail(params.token)
 
     if (!result.success) {
       throw new HttpException(result.message, HttpStatus.BAD_REQUEST)
