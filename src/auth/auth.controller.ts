@@ -1,3 +1,4 @@
+// dependencies
 import {
   Post,
   Body,
@@ -7,17 +8,24 @@ import {
   Controller,
   HttpException
 } from '@nestjs/common'
+
+// services
 import { AuthService } from './auth.service'
-import { CreateUserDto } from 'user/dto/create-user.dto'
-import { LoginUserDto } from 'user/dto/login-user.dto'
+
+// interfaces
 import {
   RegistrationStatus,
   VerifyOtpStatus,
   ResendOtpStatus
 } from 'interfaces'
-import { VerifyOtpPayloadDto } from './dto/verify-otp.dto'
-import { ResendOtpPayloadDto } from './dto/resend-otp.dto'
-import { VerifyEmailPayloadDto } from './dto/verify-email'
+
+// dto's
+import { CreateUserDto, LoginUserDto } from 'users/dto'
+import {
+  VerifyOtpPayloadDto,
+  ResendOtpPayloadDto,
+  VerifyEmailPayloadDto
+} from './dto'
 
 @Controller('auth')
 export class AuthController {

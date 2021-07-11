@@ -1,15 +1,22 @@
+// dependencies
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter'
 import { InjectTwilio, TwilioClient } from 'nestjs-twilio'
 import { MailerService } from '@nestjs-modules/mailer'
 import { JwtService } from '@nestjs/jwt'
 
-import { CreateUserDto } from 'user/dto/create-user.dto'
-import { UserDto } from 'user/dto/user-dto'
-import { UserService } from 'user/user.service'
-import { TermiiService } from './termii'
+// services
+import { UsersService } from 'users/users.service'
+import { TermiiService } from './termii.service'
+
+// dto's
+import { CreateUserDto, LoginUserDto, UserDto } from 'users/dto'
+import { VerifyOtpPayloadDto, ResendOtpPayloadDto } from './dto'
+
+// environment variables
 import { secret, expiresIn, clientUrl } from 'app.environment'
-import { LoginUserDto } from 'user/dto/login-user.dto'
+
+// interfaces
 import {
   JwtPayload,
   VerifyOtpStatus,
@@ -17,8 +24,9 @@ import {
   ResendOtpStatus,
   StatusEnum
 } from 'interfaces'
+
+// events
 import { PhoneNumberVerifiedEvent } from 'event'
-import { VerifyOtpPayloadDto, ResendOtpPayloadDto } from './dto'
 
 @Injectable()
 export class AuthService {
@@ -27,7 +35,7 @@ export class AuthService {
     private readonly mailerService: MailerService,
     private readonly eventEmitter: EventEmitter2,
     private readonly termiiService: TermiiService,
-    private readonly userService: UserService,
+    private readonly usersService: UsersService,
     private readonly jwtService: JwtService
   ) {}
 
@@ -38,9 +46,9 @@ export class AuthService {
     }
     try {
       // check to see if email already exist
-      let user = await this.userService.findOne({ email: payload.email })
+      let user = await this.usersService.findOne({ email: payload.email })
       if (user) throw new Error('Email already registered')
-      user = await this.userService.create(payload)
+      user = await this.usersService.create(payload)
       const otpResponse = await this.termiiService.sendOtp(user.phoneNumber)
       response.data = user
       response.otpResponse = otpResponse
@@ -68,7 +76,7 @@ export class AuthService {
       const termiiResponse = await this.termiiService.verifyOtp(payload)
 
       // find a user with the phone number
-      response.user = await this.userService.findOne({
+      response.user = await this.usersService.findOne({
         phoneNumber: termiiResponse.msisdn
       })
 
@@ -114,7 +122,7 @@ export class AuthService {
     let response: ResendOtpStatus = { success: true, message: null }
     try {
       // check to see if phone number belongs to an existing user
-      const user = await this.userService.findOne({
+      const user = await this.usersService.findOne({
         phoneNumber: payload.phoneNumber
       })
       if (!user) throw new Error('No user found')
@@ -131,7 +139,7 @@ export class AuthService {
       // decode payload using jwt service decode
       const decoded: any = this.jwtService.decode(payload)
       // check to see if phone number belongs to an existing user
-      const user = await this.userService.findOne({ email: decoded.username })
+      const user = await this.usersService.findOne({ email: decoded.username })
       if (!user) throw new Error('Unexpected error occurred')
       user.isEmailVerified = true
       // TODO: add email to mailing list if needed
@@ -143,7 +151,7 @@ export class AuthService {
   }
 
   async validateUser(payload: JwtPayload): Promise<UserDto> {
-    const user = await this.userService.findOne({ email: payload.username })
+    const user = await this.usersService.findOne({ email: payload.username })
     if (!user) {
       throw new HttpException('Invalid token', HttpStatus.UNAUTHORIZED)
     }
@@ -155,7 +163,7 @@ export class AuthService {
     try {
       const incorrect = 'The email or password provide is incorrect'
       // find user in db
-      const user = await this.userService.findOne({ email: payload.email })
+      const user = await this.usersService.findOne({ email: payload.email })
       // user not found
       if (!user) throw new Error(incorrect)
       // check user provided password

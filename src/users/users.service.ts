@@ -6,7 +6,7 @@ import { UpdateUserDto } from './dto/update-user.dto'
 import { Model } from 'mongoose'
 
 @Injectable()
-export class UserService {
+export class UsersService {
   constructor(
     @InjectModel('User')
     private readonly userModel: Model<IUser>

@@ -1,21 +1,21 @@
 import {
-  Controller,
   Get,
   Post,
   Body,
   Patch,
   Param,
   Delete,
-  Query
+  Query,
+  Controller
 } from '@nestjs/common'
-import { UserService } from './user.service'
+import { UsersService } from './users.service'
 import { CreateUserDto } from './dto/create-user.dto'
 import { UpdateUserDto } from './dto/update-user.dto'
 import { QueryPayload } from './../interfaces'
 
 @Controller('users')
-export class UserController {
-  constructor(private readonly userService: UserService) {}
+export class UsersController {
+  constructor(private readonly usersService: UsersService) {}
 
   /**
    *
@@ -30,7 +30,7 @@ export class UserController {
    */
   @Post()
   create(@Body() payload: CreateUserDto) {
-    return this.userService.create(payload)
+    return this.usersService.create(payload)
   }
 
   /**
@@ -42,21 +42,21 @@ export class UserController {
    */
   @Get()
   findByPayload(@Query() payload: QueryPayload) {
-    return this.userService.find(payload)
+    return this.usersService.find(payload)
   }
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.userService.findById(id)
+    return this.usersService.findById(id)
   }
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.userService.update(id, updateUserDto)
+    return this.usersService.update(id, updateUserDto)
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.userService.remove(id)
+    return this.usersService.remove(id)
   }
 }
