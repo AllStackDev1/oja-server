@@ -187,6 +187,7 @@ export class AuthService {
         subject: 'Account Registration Successful ✔',
         template: './register',
         context: {
+          subject: 'Account Registration Successful ✔',
           link: payload.link,
           fullName: payload.fullName
         }
