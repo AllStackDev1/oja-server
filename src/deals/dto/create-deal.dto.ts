@@ -1,64 +1,66 @@
 import { ObjectId, Types } from 'mongoose'
 import { Type } from 'class-transformer'
 import {
-  IsNotEmpty,
   IsObject,
   IsString,
   IsNumber,
+  IsDefined,
+  IsNotEmpty,
   IsOptional,
-  IsNotEmptyObject,
-  ValidateNested
+  ValidateNested,
+  IsNotEmptyObject
 } from 'class-validator'
 
 export class AccountDetails {
-  @IsString()
   @IsNotEmpty()
-  currency: string
+  @IsString()
+  readonly currency: string
 
-  @IsString()
   @IsNotEmpty()
-  bankName: string
+  @IsString()
+  readonly bankName: string
 
-  @IsString()
-  @IsNotEmpty()
   @IsOptional()
-  swiftCode: string
-
   @IsString()
-  @IsNotEmpty()
-  accountName: string
+  readonly swiftCode: string
 
+  @IsNotEmpty()
   @IsString()
-  @IsNotEmpty()
-  accountNumber: string
+  readonly accountName: string
 
+  @IsNotEmpty()
+  @IsString()
+  readonly accountNumber: string
+
+  @IsNotEmpty()
   @IsNumber()
-  @IsNotEmpty()
-  amount: Types.Decimal128
+  readonly amount: Types.Decimal128
 }
 
 export class CreateDealDto {
-  @IsString()
   @IsOptional()
+  @IsString()
   user: ObjectId
 
-  @IsNumber()
   @IsNotEmpty()
-  rate: Types.Decimal128
+  @IsNumber()
+  readonly rate: Types.Decimal128
 
-  @IsNumber()
   @IsNotEmpty()
-  charges: Types.Decimal128
+  @IsNumber()
+  readonly charges: Types.Decimal128
 
   @IsNotEmptyObject()
-  @IsObject()
   @ValidateNested()
+  @IsDefined()
+  @IsObject()
   @Type(() => AccountDetails)
-  debit: AccountDetails
+  readonly debit: AccountDetails
 
   @IsNotEmptyObject()
-  @IsObject()
   @ValidateNested()
+  @IsDefined()
+  @IsObject()
   @Type(() => AccountDetails)
-  credit: AccountDetails
+  readonly credit: AccountDetails
 }

@@ -1,6 +1,6 @@
 import { IsEmail, IsNotEmpty, IsString } from 'class-validator'
 
-export default class PhoneNumberVerifiedEvent {
+export class OTPVerifiedEventDto {
   @IsEmail()
   @IsNotEmpty()
   email: string

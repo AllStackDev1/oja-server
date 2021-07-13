@@ -1,7 +1,8 @@
+import { ObjectId } from 'mongoose'
 import { PartialType } from '@nestjs/mapped-types'
+
 import { CreateUserDto } from './create-user.dto'
 import { IAddress, StatusEnum } from 'users/users.interface'
-import { ObjectId } from 'mongoose'
 export class UserDto extends PartialType(CreateUserDto) {
   readonly _id: ObjectId
 

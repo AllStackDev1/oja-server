@@ -1,3 +1,4 @@
+import { Types } from 'mongoose'
 import {
   IsEmail,
   Matches,
@@ -6,9 +7,32 @@ import {
   IsNotEmpty,
   MaxLength,
   MinLength,
-  IsPhoneNumber
+  IsPhoneNumber,
+  IsOptional,
+  IsNotEmptyObject,
+  ValidateNested,
+  IsDefined
 } from 'class-validator'
-import { IAddress } from 'users/users.interface'
+
+import { Type } from 'class-transformer'
+
+export class Address {
+  @IsString()
+  @IsOptional()
+  readonly street: string
+
+  @IsString()
+  @IsOptional()
+  readonly city: string
+
+  @IsString()
+  @IsOptional()
+  readonly state: string
+
+  @IsString()
+  @IsNotEmpty()
+  readonly country: string
+}
 
 export class CreateUserDto {
   @IsString()
@@ -35,9 +59,12 @@ export class CreateUserDto {
   @IsPhoneNumber()
   readonly phoneNumber: string
 
+  @IsNotEmptyObject()
+  @ValidateNested()
+  @IsDefined()
   @IsObject()
-  @IsNotEmpty()
-  readonly address: IAddress
+  @Type(() => Address)
+  readonly address: Address
 
   @IsString()
   @IsNotEmpty()

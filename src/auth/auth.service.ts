@@ -11,7 +11,11 @@ import { TermiiService } from './termii.service'
 
 // dto's
 import { CreateUserDto, LoginUserDto, UserDto } from 'users/dto'
-import { VerifyOtpPayloadDto, ResendOtpPayloadDto } from './dto'
+import {
+  VerifyOtpPayloadDto,
+  ResendOtpPayloadDto,
+  OTPVerifiedEventDto
+} from './dto'
 
 // environment variables
 import { secret, expiresIn, clientUrl } from 'app.environment'
@@ -24,9 +28,6 @@ import {
   ResendOtpStatus,
   RegistrationStatus
 } from './auth.interface'
-
-// events
-import { PhoneNumberVerifiedEvent } from 'event'
 
 @Injectable()
 export class AuthService {
@@ -94,7 +95,7 @@ export class AuthService {
         response.user.status = StatusEnum.ACTIVE
         await response.user.save()
         // insatiate DTO class
-        const phoneNumberVerifiedEvent = new PhoneNumberVerifiedEvent()
+        const phoneNumberVerifiedEvent = new OTPVerifiedEventDto()
         // set up object
         phoneNumberVerifiedEvent.email = response.user.email
         phoneNumberVerifiedEvent.fullName = [
@@ -103,10 +104,7 @@ export class AuthService {
         ].join(' ')
         phoneNumberVerifiedEvent.link = `${clientUrl}/auth/verify-email/${response.authToken}`
         // emit phone number verified event
-        this.eventEmitter.emit(
-          'phone.number.verified.event',
-          phoneNumberVerifiedEvent
-        )
+        this.eventEmitter.emit('otp.verified.event', phoneNumberVerifiedEvent)
       }
     } catch (e) {
       response.success = false
@@ -175,10 +173,8 @@ export class AuthService {
     return this.jwtService.sign(A, B).toString()
   }
 
-  @OnEvent('phone.number.verified.event', { async: true })
-  private async handlePhoneNumberVerifiedEvent(
-    payload: PhoneNumberVerifiedEvent
-  ) {
+  @OnEvent('otp.verified.event', { async: true })
+  private async handleOTPVerifiedEventDto(payload: OTPVerifiedEventDto) {
     try {
       const response = await this.mailerService.sendMail({
         to: payload.email,
