@@ -1,9 +1,12 @@
 import { Injectable } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
-import { IUser, QueryPayload } from 'interfaces'
+import { Model } from 'mongoose'
+
 import { CreateUserDto } from './dto/create-user.dto'
 import { UpdateUserDto } from './dto/update-user.dto'
-import { Model } from 'mongoose'
+
+import { QueryPayload } from 'interface'
+import { IUser } from './users.interface'
 
 @Injectable()
 export class UsersService {
@@ -13,19 +16,44 @@ export class UsersService {
   ) {}
 
   create = async (createUserDto: CreateUserDto) => {
-    return await this.userModel.create(createUserDto)
+    const message = 'User creation successful'
+    let response = { success: true, message, user: null }
+    try {
+      response.user = await this.userModel.create(createUserDto)
+    } catch (err) {
+      response = { success: false, message: err.message, user: null }
+    }
+    return response
   }
 
-  findOne = async (payload: QueryPayload) => {
-    return await this.userModel.findOne(payload)
+  findOne = async (payload: any) => {
+    let response = { success: true, message: null, user: null }
+    try {
+      response.user = await this.userModel.findOne(payload)
+    } catch (err) {
+      response = { success: false, message: err.message, user: null }
+    }
+    return response
   }
 
   findById = async (id: string | number) => {
-    return await this.userModel.findById(id)
+    let response = { success: true, message: null, user: null }
+    try {
+      response.user = await this.userModel.findById(id)
+    } catch (err) {
+      response = { success: false, message: err.message, user: null }
+    }
+    return response
   }
 
   find = async (payload: QueryPayload) => {
-    return await this.userModel.find(payload || {})
+    let response = { success: true, message: null, users: null }
+    try {
+      response.users = await this.userModel.find(payload || {})
+    } catch (err) {
+      response = { success: false, message: err.message, users: null }
+    }
+    return response
   }
 
   update = async (id: string | number, updateUserDto: UpdateUserDto) => {

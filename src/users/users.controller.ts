@@ -8,10 +8,13 @@ import {
   Query,
   Controller
 } from '@nestjs/common'
+
 import { UsersService } from './users.service'
+
 import { CreateUserDto } from './dto/create-user.dto'
 import { UpdateUserDto } from './dto/update-user.dto'
-import { QueryPayload } from './../interfaces'
+
+import { QueryPayload } from 'interface'
 
 @Controller('users')
 export class UsersController {
@@ -22,7 +25,7 @@ export class UsersController {
    * @description req.body.payload contains the fields required to create a user record
    * @param payload.firstName
    * @param payload.lastName
-   * @param payload.userName
+   * @param payload.username
    * @param payload.email
    * @param payload.password
    * @param payload.address.country
@@ -37,7 +40,7 @@ export class UsersController {
    *
    * @description Payload may be null it will fetch all user records
    * @param payload.email
-   * @param payload.userName
+   * @param payload.username
    * @returns HTTP response
    */
   @Get()

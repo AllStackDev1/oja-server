@@ -1,13 +1,14 @@
 import {
   IsEmail,
   Matches,
+  IsObject,
   IsString,
   IsNotEmpty,
   MaxLength,
   MinLength,
   IsPhoneNumber
 } from 'class-validator'
-import { IAddress } from 'interfaces'
+import { IAddress } from 'users/users.interface'
 
 export class CreateUserDto {
   @IsString()
@@ -34,9 +35,11 @@ export class CreateUserDto {
   @IsPhoneNumber()
   readonly phoneNumber: string
 
+  @IsObject()
   @IsNotEmpty()
   readonly address: IAddress
 
+  @IsString()
   @IsNotEmpty()
-  readonly userName: string
+  readonly username: string
 }

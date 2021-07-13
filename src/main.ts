@@ -8,7 +8,7 @@ import { port } from 'app.environment'
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { cors: true })
-  app.useGlobalPipes(new ValidationPipe())
+  app.useGlobalPipes(new ValidationPipe({ transform: true }))
   app.use(helmet())
   await app.listen(port)
   Logger.log(`App listening on port ${port}`)

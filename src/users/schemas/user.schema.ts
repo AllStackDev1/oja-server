@@ -3,7 +3,7 @@ import { Document } from 'mongoose'
 import * as _ from 'lodash'
 import * as bcrypt from 'bcrypt'
 import { saltLength } from 'app.environment'
-import { StatusEnum } from 'interfaces'
+import { StatusEnum } from 'users/users.interface'
 
 export type UserDocument = User & Document
 
@@ -16,12 +16,12 @@ export class User {
   lastName: string
 
   @Prop({
-    unique: true,
-    lowercase: true,
     trim: true,
-    required: true
+    unique: true,
+    required: true,
+    lowercase: true
   })
-  userName: string
+  username: string
 
   @Prop({
     trim: true,

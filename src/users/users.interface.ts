@@ -1,3 +1,5 @@
+import { Document, ObjectId } from 'mongoose'
+
 export interface IAddress {
   street: string
   city: string
@@ -11,12 +13,13 @@ export enum StatusEnum {
 }
 
 export interface IUser extends Document {
+  _id: ObjectId
   email: string
   avatar: string
   status: StatusEnum
   password: string
   lastName: string
-  userName: string
+  username: string
   firstName: string
   address: IAddress
   dateOfBirth: Date

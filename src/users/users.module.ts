@@ -8,7 +8,7 @@ import { UsersService } from './users.service'
 import { UsersController } from './users.controller'
 
 // entity
-import { User, UserSchema } from 'users/entities/user.entity'
+import { User, UserSchema } from 'users/schemas/user.schema'
 
 @Module({
   imports: [

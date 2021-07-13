@@ -5,7 +5,7 @@ import { HttpService, Injectable } from '@nestjs/common'
 import { termiiKey, termiiId } from 'app.environment'
 
 // interfaces
-import { ITermiiVerifyOTP } from 'interfaces'
+import { ITermiiVerifyOTP } from 'auth/auth.interface'
 
 @Injectable()
 export class TermiiService {

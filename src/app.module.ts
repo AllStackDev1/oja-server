@@ -13,8 +13,9 @@ import { AppService } from 'app.service'
 
 // modules
 import { AuthModule } from 'auth/auth.module'
-import { TransactionsModule } from 'transactions/transactions.module'
 import { UsersModule } from 'users/users.module'
+import { DealsModule } from './deals/deals.module'
+import { TransactionsModule } from 'transactions/transactions.module'
 
 // environment variables
 import {
@@ -30,6 +31,7 @@ import {
   imports: [
     AuthModule,
     UsersModule,
+    DealsModule,
     TransactionsModule,
     EventEmitterModule.forRoot(),
     MongooseModule.forRootAsync({

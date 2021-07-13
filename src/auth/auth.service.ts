@@ -1,5 +1,5 @@
 // dependencies
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter'
 import { InjectTwilio, TwilioClient } from 'nestjs-twilio'
 import { MailerService } from '@nestjs-modules/mailer'
@@ -17,13 +17,13 @@ import { VerifyOtpPayloadDto, ResendOtpPayloadDto } from './dto'
 import { secret, expiresIn, clientUrl } from 'app.environment'
 
 // interfaces
+import { StatusEnum } from 'users/users.interface'
 import {
   JwtPayload,
   VerifyOtpStatus,
-  RegistrationStatus,
   ResendOtpStatus,
-  StatusEnum
-} from 'interfaces'
+  RegistrationStatus
+} from './auth.interface'
 
 // events
 import { PhoneNumberVerifiedEvent } from 'event'
@@ -46,11 +46,13 @@ export class AuthService {
     }
     try {
       // check to see if email already exist
-      let user = await this.usersService.findOne({ email: payload.email })
-      if (user) throw new Error('Email already registered')
-      user = await this.usersService.create(payload)
-      const otpResponse = await this.termiiService.sendOtp(user.phoneNumber)
-      response.data = user
+      let result = await this.usersService.findOne({ email: payload.email })
+      if (result.user) throw new Error('Email already registered')
+      result = await this.usersService.create(payload)
+      const otpResponse = await this.termiiService.sendOtp(
+        result.user.phoneNumber
+      )
+      response.data = result.user
       response.otpResponse = otpResponse
     } catch (err) {
       response = { success: false, message: err.message }
@@ -76,19 +78,14 @@ export class AuthService {
       const termiiResponse = await this.termiiService.verifyOtp(payload)
 
       // find a user with the phone number
-      response.user = await this.usersService.findOne({
+      const { user } = await this.usersService.findOne({
         phoneNumber: termiiResponse.msisdn
       })
 
+      response.user = user
       // generate an auth token which will allow the user access into
       // the application
-      const { accessToken } = this._createToken(
-        response.user,
-        payload.expiresIn
-      )
-
-      // add user and auth token to response data object
-      response.authToken = accessToken
+      response.authToken = this._createToken(response.user, payload.expiresIn)
 
       // To make sure that user only receive this once we check
       // if the user is already active, as this method wil be reused
@@ -102,9 +99,9 @@ export class AuthService {
         phoneNumberVerifiedEvent.email = response.user.email
         phoneNumberVerifiedEvent.fullName = [
           response.user.firstName,
-          response.user.lastModified
+          response.user.lastName
         ].join(' ')
-        phoneNumberVerifiedEvent.link = `${clientUrl}/auth/verify-email/${accessToken}`
+        phoneNumberVerifiedEvent.link = `${clientUrl}/auth/verify-email/${response.authToken}`
         // emit phone number verified event
         this.eventEmitter.emit(
           'phone.number.verified.event',
@@ -122,7 +119,7 @@ export class AuthService {
     let response: ResendOtpStatus = { success: true, message: null }
     try {
       // check to see if phone number belongs to an existing user
-      const user = await this.usersService.findOne({
+      const { user } = await this.usersService.findOne({
         phoneNumber: payload.phoneNumber
       })
       if (!user) throw new Error('No user found')
@@ -139,7 +136,9 @@ export class AuthService {
       // decode payload using jwt service decode
       const decoded: any = this.jwtService.decode(payload)
       // check to see if phone number belongs to an existing user
-      const user = await this.usersService.findOne({ email: decoded.username })
+      const { user } = await this.usersService.findOne({
+        email: decoded.username
+      })
       if (!user) throw new Error('Unexpected error occurred')
       user.isEmailVerified = true
       // TODO: add email to mailing list if needed
@@ -150,39 +149,30 @@ export class AuthService {
     return response
   }
 
-  async validateUser(payload: JwtPayload): Promise<UserDto> {
-    const user = await this.usersService.findOne({ email: payload.username })
-    if (!user) {
-      throw new HttpException('Invalid token', HttpStatus.UNAUTHORIZED)
-    }
-    return user
-  }
-
-  async login(payload: LoginUserDto): Promise<ResendOtpStatus> {
+  async validateUser(payload: LoginUserDto): Promise<ResendOtpStatus> {
     let response: ResendOtpStatus = { success: true, message: null }
     try {
-      const incorrect = 'The email or password provide is incorrect'
       // find user in db
-      const user = await this.usersService.findOne({ email: payload.email })
-      // user not found
-      if (!user) throw new Error(incorrect)
-      // check user provided password
-      const isMatch = user.comparePassword(payload.password)
-      if (!isMatch) throw new Error(incorrect)
-
-      response.message = await this.termiiService.sendOtp(user.phoneNumber)
+      const { user } = await this.usersService.findOne({
+        $or: [{ email: payload.email }, { username: payload.username }]
+      })
+      // if user exist and user password match
+      if (user && user.comparePassword(payload.password)) {
+        response.message = this._createToken(user, expiresIn)
+        // response.message = await this.termiiService.sendOtp(user.phoneNumber)
+      } else {
+        throw new Error('Incorrect email or password')
+      }
     } catch (err) {
       response = { success: false, message: err.message }
     }
     return response
   }
 
-  private _createToken({ email }: UserDto, exp = expiresIn): any {
-    const user: JwtPayload = { username: email }
-    const accessToken = this.jwtService
-      .sign(user, { secret, expiresIn: exp })
-      .toString()
-    return { expiresIn, accessToken }
+  private _createToken({ _id, username }: UserDto, exp = expiresIn): string {
+    const A: JwtPayload = { sub: _id, username }
+    const B = { secret, expiresIn: exp }
+    return this.jwtService.sign(A, B).toString()
   }
 
   @OnEvent('phone.number.verified.event', { async: true })
