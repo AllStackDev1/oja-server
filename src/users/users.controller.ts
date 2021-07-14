@@ -11,10 +11,9 @@ import {
 
 import { UsersService } from './users.service'
 
-import { CreateUserDto } from './dto/create-user.dto'
-import { UpdateUserDto } from './dto/update-user.dto'
+import { CreateUserDto, UpdateUserDto } from './dto'
 
-import { QueryPayload } from 'interface'
+import { ObjectPayloadDto } from 'lib/interfaces'
 
 @Controller('users')
 export class UsersController {
@@ -33,7 +32,7 @@ export class UsersController {
    */
   @Post()
   create(@Body() payload: CreateUserDto) {
-    return this.usersService.create(payload)
+    return this.usersService.create<CreateUserDto>(payload)
   }
 
   /**
@@ -44,7 +43,7 @@ export class UsersController {
    * @returns HTTP response
    */
   @Get()
-  findByPayload(@Query() payload: QueryPayload) {
+  findByPayload(@Query() payload: ObjectPayloadDto) {
     return this.usersService.find(payload)
   }
 
@@ -55,7 +54,7 @@ export class UsersController {
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.usersService.update(id, updateUserDto)
+    return this.usersService.update<UpdateUserDto>(id, updateUserDto)
   }
 
   @Delete(':id')

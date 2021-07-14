@@ -1,4 +1,3 @@
-// dependencies
 import {
   Get,
   Post,
@@ -12,24 +11,19 @@ import {
   HttpException
 } from '@nestjs/common'
 
-// services
 import { AuthService } from './auth.service'
-
-// interfaces
+import { CreateUserDto, LoginUserDto } from 'users/dto'
+import { JwtAuthGuard } from './jwt-auth.guard'
 import {
   RegistrationStatus,
   VerifyOtpStatus,
-  ResendOtpStatus
-} from 'auth/auth.interface'
-
-// dto's
-import { CreateUserDto, LoginUserDto } from 'users/dto'
+  ResponsePayload
+} from 'lib/interfaces'
 import {
   VerifyOtpPayloadDto,
   ResendOtpPayloadDto,
   VerifyEmailPayloadDto
 } from './dto'
-import { JwtAuthGuard } from './jwt-auth.guard'
 
 @Controller('auth')
 export class AuthController {
@@ -61,7 +55,7 @@ export class AuthController {
   @Post('resend-otp')
   public async resendOtp(
     @Body() payload: ResendOtpPayloadDto
-  ): Promise<ResendOtpStatus> {
+  ): Promise<ResponsePayload<any, string>> {
     const result = await this.authService.resendOtp(payload)
 
     if (!result.success) {

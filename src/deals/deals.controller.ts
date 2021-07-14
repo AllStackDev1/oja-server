@@ -19,7 +19,8 @@ import { DealsService } from './deals.service'
 import { CreateDealDto } from './dto/create-deal.dto'
 import { UpdateDealDto } from './dto/update-deal.dto'
 
-import { QueryPayload } from 'interface'
+import { ObjectPayloadDto } from 'lib/interfaces'
+
 import { JwtAuthGuard } from 'auth/jwt-auth.guard'
 import { UserDto } from 'users/dto'
 
@@ -58,7 +59,7 @@ export class DealsController {
    * @returns HTTP response
    */
   @Get()
-  public async findByPayload(@Query() payload: QueryPayload) {
+  public async findByPayload(@Query() payload: ObjectPayloadDto) {
     const result = await this.dealsService.find(payload)
     if (!result.success) {
       throw new HttpException(result.message, HttpStatus.BAD_REQUEST)

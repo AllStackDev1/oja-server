@@ -21,13 +21,13 @@ import {
 import { secret, expiresIn, clientUrl } from 'app.environment'
 
 // interfaces
-import { StatusEnum } from 'users/users.interface'
 import {
+  StatusEnum,
   JwtPayload,
   VerifyOtpStatus,
-  ResendOtpStatus,
+  ResponsePayload,
   RegistrationStatus
-} from './auth.interface'
+} from 'lib/interfaces'
 
 @Injectable()
 export class AuthService {
@@ -47,13 +47,13 @@ export class AuthService {
     }
     try {
       // check to see if email already exist
-      let result = await this.usersService.findOne({ email: payload.email })
-      if (result.user) throw new Error('Email already registered')
-      result = await this.usersService.create(payload)
+      const res1 = await this.usersService.findOne({ email: payload.email })
+      if (res1.data) throw new Error('Email already registered')
+      const res2 = await this.usersService.create<CreateUserDto>(payload)
       const otpResponse = await this.termiiService.sendOtp(
-        result.user.phoneNumber
+        res2.data.phoneNumber
       )
-      response.data = result.user
+      response.data = res2.data
       response.otpResponse = otpResponse
     } catch (err) {
       response = { success: false, message: err.message }
@@ -79,7 +79,7 @@ export class AuthService {
       const termiiResponse = await this.termiiService.verifyOtp(payload)
 
       // find a user with the phone number
-      const { user } = await this.usersService.findOne({
+      const { data: user } = await this.usersService.findOne({
         phoneNumber: termiiResponse.msisdn
       })
 
@@ -113,11 +113,16 @@ export class AuthService {
     return response
   }
 
-  async resendOtp(payload: ResendOtpPayloadDto): Promise<ResendOtpStatus> {
-    let response: ResendOtpStatus = { success: true, message: null }
+  async resendOtp(
+    payload: ResendOtpPayloadDto
+  ): Promise<ResponsePayload<any, string>> {
+    let response: ResponsePayload<any, string> = {
+      success: true,
+      message: 'OTP sent successfully'
+    }
     try {
       // check to see if phone number belongs to an existing user
-      const { user } = await this.usersService.findOne({
+      const { data: user } = await this.usersService.findOne({
         phoneNumber: payload.phoneNumber
       })
       if (!user) throw new Error('No user found')
@@ -128,13 +133,16 @@ export class AuthService {
     return response
   }
 
-  async verifyEmail(payload: string): Promise<any> {
-    let response = { success: true, message: 'Email verification successful' }
+  async verifyEmail(payload: string): Promise<ResponsePayload<any, string>> {
+    let response: ResponsePayload<any, string> = {
+      success: true,
+      message: 'Email verification successful'
+    }
     try {
       // decode payload using jwt service decode
       const decoded: any = this.jwtService.decode(payload)
       // check to see if phone number belongs to an existing user
-      const { user } = await this.usersService.findOne({
+      const { data: user } = await this.usersService.findOne({
         email: decoded.username
       })
       if (!user) throw new Error('Unexpected error occurred')
@@ -147,17 +155,22 @@ export class AuthService {
     return response
   }
 
-  async validateUser(payload: LoginUserDto): Promise<ResendOtpStatus> {
-    let response: ResendOtpStatus = { success: true, message: null }
+  async validateUser(
+    payload: LoginUserDto
+  ): Promise<ResponsePayload<any, string>> {
+    let response: ResponsePayload<any, string> = {
+      success: true,
+      message: 'User found'
+    }
     try {
       // find user in db
-      const { user } = await this.usersService.findOne({
+      const { data: user } = await this.usersService.findOne({
         $or: [{ email: payload.email }, { username: payload.username }]
       })
       // if user exist and user password match
       if (user && user.comparePassword(payload.password)) {
-        response.message = this._createToken(user, expiresIn)
-        // response.message = await this.termiiService.sendOtp(user.phoneNumber)
+        // response.data = this._createToken(user, expiresIn)
+        response.data = await this.termiiService.sendOtp(user.phoneNumber)
       } else {
         throw new Error('Incorrect email or password')
       }

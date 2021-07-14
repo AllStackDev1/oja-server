@@ -1,9 +1,10 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
-import { Document } from 'mongoose'
 import * as _ from 'lodash'
 import * as bcrypt from 'bcrypt'
+import { Document } from 'mongoose'
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
+
 import { saltLength } from 'app.environment'
-import { StatusEnum } from 'users/users.interface'
+import { StatusEnum } from 'lib/interfaces'
 
 export type UserDocument = User & Document
 
