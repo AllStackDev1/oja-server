@@ -6,18 +6,22 @@ import {
   Param,
   Delete,
   Query,
-  Controller
+  Controller,
+  HttpException,
+  HttpStatus,
+  UseGuards,
+  Request
 } from '@nestjs/common'
 
-import { UsersService } from './users.service'
-
-import { CreateUserDto, UpdateUserDto } from './dto'
-
+import { CreateUserDto, UpdateUserDto, UserDto } from './dto'
+import { JwtAuthGuard } from 'auth/jwt-auth.guard'
 import { ObjectPayloadDto } from 'lib/interfaces'
+import { UsersService } from './users.service'
+import { IDPayloadDto } from 'lib/id.dto'
 
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(private readonly service: UsersService) {}
 
   /**
    *
@@ -30,35 +34,69 @@ export class UsersController {
    * @param payload.address.country
    * @returns HTTP response
    */
+  @UseGuards(JwtAuthGuard)
   @Post()
-  create(@Body() payload: CreateUserDto) {
-    return this.usersService.create<CreateUserDto>(payload)
+  async create(@Body() dto: CreateUserDto) {
+    const result = await this.service.create(dto)
+    if (!result.success) {
+      throw new HttpException(result.message, HttpStatus.BAD_REQUEST)
+    }
+    return result
   }
 
   /**
-   *
    * @description Payload may be null it will fetch all user records
    * @param payload.email
    * @param payload.username
    * @returns HTTP response
    */
+
+  @UseGuards(JwtAuthGuard)
   @Get()
-  findByPayload(@Query() payload: ObjectPayloadDto) {
-    return this.usersService.find(payload)
+  async findByPayload(@Query() payload: ObjectPayloadDto) {
+    const result = await this.service.find(payload)
+    if (!result.success) {
+      throw new HttpException(result.message, HttpStatus.BAD_REQUEST)
+    }
+    return result
   }
 
+  @Get('count')
+  async CountByPayload() {
+    const result = await this.service.find({})
+    if (!result.success) {
+      throw new HttpException(result.message, HttpStatus.BAD_REQUEST)
+    }
+    return { ...result, count: result.data.length, data: null }
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.usersService.findById(id)
+  async findOne(@Param() params: IDPayloadDto) {
+    const result = await this.service.findById(params.id)
+    if (!result.success) {
+      throw new HttpException(result.message, HttpStatus.BAD_REQUEST)
+    }
+    return result
   }
 
+  @UseGuards(JwtAuthGuard)
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.usersService.update<UpdateUserDto>(id, updateUserDto)
+  async update(@Param() params: IDPayloadDto, @Body() dto: UpdateUserDto) {
+    const result = await this.service.update(params.id, dto)
+    if (!result.success) {
+      throw new HttpException(result.message, HttpStatus.BAD_REQUEST)
+    }
+    return result
   }
 
+  @UseGuards(JwtAuthGuard)
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.usersService.remove(id)
+  async remove(@Param() params: IDPayloadDto) {
+    const result = await this.service.remove(params.id)
+    if (!result.success) {
+      throw new HttpException(result.message, HttpStatus.BAD_REQUEST)
+    }
+    return result
   }
 }

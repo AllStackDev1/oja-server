@@ -1,8 +1,9 @@
 // dependencies
 import { Module } from '@nestjs/common'
 import { MongooseModule } from '@nestjs/mongoose'
-import { EventEmitterModule } from '@nestjs/event-emitter'
+import { ScheduleModule } from '@nestjs/schedule'
 import { MailerModule } from '@nestjs-modules/mailer'
+import { EventEmitterModule } from '@nestjs/event-emitter'
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter'
 
 // controller
@@ -15,6 +16,7 @@ import { AppService } from 'app.service'
 import { AuthModule } from 'auth/auth.module'
 import { UsersModule } from 'users/users.module'
 import { DealsModule } from './deals/deals.module'
+import { QueuesModule } from './queues/queues.module'
 import { TransactionsModule } from 'transactions/transactions.module'
 
 // environment variables
@@ -26,13 +28,16 @@ import {
   smtpPort,
   smtpHost
 } from 'app.environment'
+import { CountriesModule } from './countries/countries.module';
 
 @Module({
   imports: [
     AuthModule,
     UsersModule,
     DealsModule,
+    QueuesModule,
     TransactionsModule,
+    ScheduleModule.forRoot(),
     EventEmitterModule.forRoot(),
     MongooseModule.forRootAsync({
       useFactory: async () => ({
@@ -60,7 +65,8 @@ import {
           strict: true
         }
       }
-    })
+    }),
+    CountriesModule
   ],
   controllers: [AppController],
   providers: [AppService]

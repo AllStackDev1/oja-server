@@ -5,22 +5,6 @@ import { InjectTwilio, TwilioClient } from 'nestjs-twilio'
 import { MailerService } from '@nestjs-modules/mailer'
 import { JwtService } from '@nestjs/jwt'
 
-// services
-import { UsersService } from 'users/users.service'
-import { TermiiService } from './termii.service'
-
-// dto's
-import { CreateUserDto, LoginUserDto, UserDto } from 'users/dto'
-import {
-  VerifyOtpPayloadDto,
-  ResendOtpPayloadDto,
-  OTPVerifiedEventDto
-} from './dto'
-
-// environment variables
-import { secret, expiresIn, clientUrl } from 'app.environment'
-
-// interfaces
 import {
   StatusEnum,
   JwtPayload,
@@ -28,6 +12,15 @@ import {
   ResponsePayload,
   RegistrationStatus
 } from 'lib/interfaces'
+import {
+  VerifyOtpPayloadDto,
+  ResendOtpPayloadDto,
+  OTPVerifiedEventDto
+} from './dto'
+import { CreateUserDto, LoginUserDto, UserDto } from 'users/dto'
+import { secret, expiresIn, clientUrl } from 'app.environment'
+import { UsersService } from 'users/users.service'
+import { TermiiService } from './termii.service'
 
 @Injectable()
 export class AuthService {
@@ -46,15 +39,31 @@ export class AuthService {
       message: 'Account creation successful'
     }
     try {
-      // check to see if email already exist
-      const res1 = await this.usersService.findOne({ email: payload.email })
-      if (res1.data) throw new Error('Email already registered')
-      const res2 = await this.usersService.create<CreateUserDto>(payload)
-      const otpResponse = await this.termiiService.sendOtp(
-        res2.data.phoneNumber
-      )
-      response.data = res2.data
-      response.otpResponse = otpResponse
+      // check to see if email or username already exist
+      const { data: foundUser } = await this.usersService.findOne({
+        $or: [
+          { email: payload.email },
+          { username: payload.username },
+          { phoneNumber: payload.phoneNumber }
+        ]
+      })
+      if (foundUser) {
+        throw new Error('Email or username, or phone number already in use')
+      }
+      const {
+        success,
+        data: newUser,
+        message
+      } = await this.usersService.create(payload)
+      if (success) {
+        const otpResponse = await this.termiiService.sendOtp(
+          newUser.phoneNumber
+        )
+        response.data = newUser
+        response.otpResponse = otpResponse
+      } else {
+        throw new Error(message)
+      }
     } catch (err) {
       response = { success: false, message: err.message }
     }
@@ -187,7 +196,7 @@ export class AuthService {
   }
 
   @OnEvent('otp.verified.event', { async: true })
-  private async handleOTPVerifiedEventDto(payload: OTPVerifiedEventDto) {
+  protected async handleOTPVerifiedEventDto(payload: OTPVerifiedEventDto) {
     try {
       const response = await this.mailerService.sendMail({
         to: payload.email,

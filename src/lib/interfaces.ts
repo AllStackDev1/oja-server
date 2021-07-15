@@ -1,4 +1,4 @@
-import { Document, Types, ObjectId } from 'mongoose'
+import { Document, Decimal128, ObjectId } from 'mongoose'
 
 export interface IAddress {
   street: string
@@ -11,18 +11,18 @@ export enum StatusEnum {
   ACTIVE = 'ACTIVE',
   INACTIVE = 'INACTIVE'
 }
-
 export interface IUser extends Document {
   _id: ObjectId
   email: string
   avatar: string
-  status: StatusEnum
+  isAdmin: boolean
   password: string
   lastName: string
   username: string
   firstName: string
   address: IAddress
   dateOfBirth: Date
+  status: StatusEnum
   phoneNumber: string
   isEmailVerified: boolean
   save(p?: any): Promise<any>
@@ -65,19 +65,33 @@ export interface VerifyOtpStatus extends ResponsePayload<any, any> {
   authToken?: string
 }
 
+export interface ICountry extends Document {
+  _id: ObjectId
+  dialCode: string
+  name: string
+  currency: string
+  placeholder: string
+}
+
 export interface IAccountDetails {
   currency: string
   bankName: string
   swiftCode: string
   accountName: string
   accountNumber: string
-  amount: Types.Decimal128
+  amount: Decimal128
 }
 
 export interface IDeal extends Document {
-  user: ObjectId
-  rate: Types.Decimal128
-  charges: Types.Decimal128
+  _id: ObjectId
+  user: IUser
+  rate: Decimal128
+  charges: Decimal128
   debitDetails: IAccountDetails
   creditDetails: IAccountDetails
+}
+
+export interface IQueue extends Document {
+  _id: ObjectId
+  deal: IDeal
 }

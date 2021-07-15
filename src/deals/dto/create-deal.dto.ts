@@ -1,4 +1,4 @@
-import { ObjectId, Types } from 'mongoose'
+import { ObjectId, Decimal128 } from 'mongoose'
 import { Type } from 'class-transformer'
 import {
   IsObject,
@@ -34,7 +34,7 @@ export class AccountDetails {
 
   @IsNotEmpty()
   @IsNumber()
-  readonly amount: Types.Decimal128
+  readonly amount: Decimal128
 }
 
 export class CreateDealDto {
@@ -44,11 +44,11 @@ export class CreateDealDto {
 
   @IsNotEmpty()
   @IsNumber()
-  readonly rate: Types.Decimal128
+  readonly rate: Decimal128
 
   @IsNotEmpty()
   @IsNumber()
-  readonly charges: Types.Decimal128
+  readonly charges: Decimal128
 
   @IsNotEmptyObject()
   @ValidateNested()

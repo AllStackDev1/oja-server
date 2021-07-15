@@ -6,6 +6,8 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
 import { saltLength } from 'app.environment'
 import { StatusEnum } from 'lib/interfaces'
 
+import { Address, AddressSchema } from './address.schema'
+
 export type UserDocument = User & Document
 
 @Schema({ versionKey: false, timestamps: true })
@@ -16,39 +18,20 @@ export class User {
   @Prop({ required: true })
   lastName: string
 
-  @Prop({
-    trim: true,
-    unique: true,
-    required: true,
-    lowercase: true
-  })
+  @Prop({ trim: true, unique: true, required: true, lowercase: true })
   username: string
 
-  @Prop({
-    trim: true,
-    unique: true,
-    required: true,
-    lowercase: true
-  })
+  @Prop({ trim: true, unique: true, required: true, lowercase: true })
   email: string
 
   @Prop({ minlength: 8, required: true })
   password: string
 
-  @Prop({
-    trim: true,
-    unique: true,
-    required: true
-  })
+  @Prop({ trim: true, unique: true, required: true })
   phoneNumber: string
 
-  @Prop({ type: {}, required: true })
-  address: {
-    street: string
-    city: string
-    state: string
-    country: string
-  }
+  @Prop({ type: AddressSchema, required: true })
+  address: Address
 
   @Prop()
   avatar: string
@@ -61,6 +44,9 @@ export class User {
 
   @Prop({ default: false })
   isEmailVerified: boolean
+
+  @Prop({ default: false })
+  isAdmin: boolean
 }
 
 const schema = SchemaFactory.createForClass(User)
@@ -84,6 +70,7 @@ schema.pre<UserDocument>('save', function (this: UserDocument, next) {
 
 /**
  * @summary method will remove the user password from the object body
+ * @returns {Record<string, any>}
  */
 schema.methods.toJSON = function () {
   return _.omit(this.toObject(), 'password')

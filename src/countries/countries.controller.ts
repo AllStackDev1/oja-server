@@ -3,47 +3,37 @@ import {
   Post,
   Body,
   Patch,
-  Param,
   Query,
+  Param,
   Delete,
-  Request,
-  UsePipes,
-  UseGuards,
   Controller,
   HttpStatus,
   HttpException,
-  ValidationPipe
+  UseGuards
 } from '@nestjs/common'
-
-import { DealsService } from './deals.service'
-import { CreateDealDto } from './dto/create-deal.dto'
-import { UpdateDealDto } from './dto/update-deal.dto'
-import { ObjectPayloadDto } from 'lib/interfaces'
 import { JwtAuthGuard } from 'auth/jwt-auth.guard'
-import { IDPayloadDto } from 'lib/id.dto'
-import { UserDto } from 'users/dto'
 
-@UseGuards(JwtAuthGuard)
-@Controller('deals')
-export class DealsController {
-  constructor(private readonly service: DealsService) {}
+import { IDPayloadDto } from 'lib/id.dto'
+import { ObjectPayloadDto } from 'lib/interfaces'
+import { CountriesService } from './countries.service'
+import { CreateCountryDto } from './dto/create-country.dto'
+import { UpdateCountryDto } from './dto/update-country.dto'
+
+@Controller('countries')
+export class CountriesController {
+  constructor(private readonly service: CountriesService) {}
 
   /**
    * @description req.body.payload contains the fields required to create a user record
-   * @param payload.user
-   * @param payload.rate
-   * @param payload.charges
-   * @param payload.credit
-   * @param payload.debit
+   * @param payload.name
+   * @param payload.currency
+   * @param payload.dialCode
+   * @param payload.placeholder
    * @returns HTTP response
    */
-  @UsePipes(new ValidationPipe({ transform: true }))
+  @UseGuards(JwtAuthGuard)
   @Post()
-  async create(
-    @Request() req: Record<string, UserDto>,
-    @Body() payload: CreateDealDto
-  ) {
-    if (!payload.user) payload.user = req.user._id
+  async create(@Body() payload: CreateCountryDto) {
     const result = await this.service.create(payload)
     if (!result.success) {
       throw new HttpException(result.message, HttpStatus.BAD_REQUEST)
@@ -66,6 +56,7 @@ export class DealsController {
     return result
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get(':id')
   async findOne(@Param() params: IDPayloadDto) {
     const result = await this.service.findById(params.id)
@@ -75,10 +66,11 @@ export class DealsController {
     return result
   }
 
+  @UseGuards(JwtAuthGuard)
   @Patch(':id')
   async update(
     @Param() params: IDPayloadDto,
-    @Body() updateDealDto: UpdateDealDto
+    @Body() updateDealDto: UpdateCountryDto
   ) {
     const result = await this.service.update(params.id, updateDealDto)
     if (!result.success) {
@@ -87,6 +79,7 @@ export class DealsController {
     return result
   }
 
+  @UseGuards(JwtAuthGuard)
   @Delete(':id')
   async remove(@Param() params: IDPayloadDto) {
     const result = await this.service.remove(params.id)

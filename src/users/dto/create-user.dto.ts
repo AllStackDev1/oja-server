@@ -1,4 +1,3 @@
-import { Types } from 'mongoose'
 import {
   IsEmail,
   Matches,
@@ -13,7 +12,6 @@ import {
   ValidateNested,
   IsDefined
 } from 'class-validator'
-
 import { Type } from 'class-transformer'
 
 export class Address {

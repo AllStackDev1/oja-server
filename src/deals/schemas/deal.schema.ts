@@ -1,18 +1,10 @@
 import { Document, Types, Schema as MongooseSchema } from 'mongoose'
-import { Prop, raw, Schema, SchemaFactory } from '@nestjs/mongoose'
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
 
 import { User } from 'users/schemas/user.schema'
+import { Details, DetailsSchema } from './details.schema'
 
 export type DealDocument = Deal & Document
-
-const AccountDetails = {
-  swiftCode: String,
-  currency: { type: String, required: true },
-  bankName: { type: String, required: true },
-  accountName: { type: String, required: true },
-  accountNumber: { type: String, required: true },
-  amount: { type: Types.Decimal128, required: true }
-}
 
 @Schema({ versionKey: false, timestamps: true })
 export class Deal {
@@ -25,11 +17,11 @@ export class Deal {
   @Prop({ type: MongooseSchema.Types.Decimal128, required: true })
   charges: Types.Decimal128
 
-  @Prop(raw(AccountDetails))
-  debit: Record<string, any>
+  @Prop({ type: DetailsSchema, required: true })
+  debit: Details
 
-  @Prop(raw(AccountDetails))
-  credit: Record<string, any>
+  @Prop({ type: DetailsSchema, required: true })
+  credit: Details
 }
 
 export const DealSchema = SchemaFactory.createForClass(Deal)
