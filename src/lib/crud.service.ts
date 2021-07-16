@@ -65,14 +65,14 @@ export abstract class CrudService<M, C, U> {
 
   async update(
     id: string | number,
-    payloadDto: U
+    payload: U
   ): Promise<ResponsePayload<M, string>> {
     let response: ResponsePayload<M, string> = {
       success: true,
       message: `${this.name} updated successfully`
     }
     try {
-      response.data = await this.model.findByIdAndUpdate(id, payloadDto, {
+      response.data = await this.model.findByIdAndUpdate(id, payload, {
         new: true
       })
     } catch (err) {

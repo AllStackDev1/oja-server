@@ -65,12 +65,30 @@ export interface VerifyOtpStatus extends ResponsePayload<any, any> {
   authToken?: string
 }
 
+export interface ICurrency extends Document {
+  name: string
+  code: string
+  symbol: string
+}
+
+export interface IPhone extends Document {
+  code: string
+  placeholder: string
+}
+
+export interface IRate extends Document {
+  name: string
+  rate: Decimal128
+}
+
 export interface ICountry extends Document {
   _id: ObjectId
-  dialCode: string
   name: string
-  currency: string
-  placeholder: string
+  code: string
+  phone: IPhone
+  rates: IRate[]
+  status: boolean
+  currency: ICurrency
 }
 
 export interface IAccountDetails {
@@ -86,7 +104,8 @@ export interface IDeal extends Document {
   _id: ObjectId
   user: IUser
   rate: Decimal128
-  charges: Decimal128
+  transactionFee: Decimal128
+  settlementFee: Decimal128
   debitDetails: IAccountDetails
   creditDetails: IAccountDetails
 }

@@ -15,7 +15,10 @@ export class Deal {
   rate: Types.Decimal128
 
   @Prop({ type: MongooseSchema.Types.Decimal128, required: true })
-  charges: Types.Decimal128
+  transactionFee: Types.Decimal128
+
+  @Prop({ type: MongooseSchema.Types.Decimal128, required: true })
+  settlementFee: Types.Decimal128
 
   @Prop({ type: DetailsSchema, required: true })
   debit: Details

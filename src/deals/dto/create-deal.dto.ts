@@ -48,7 +48,11 @@ export class CreateDealDto {
 
   @IsNotEmpty()
   @IsNumber()
-  readonly charges: Decimal128
+  readonly transactionFee: Decimal128
+
+  @IsNotEmpty()
+  @IsNumber()
+  readonly settlementFee: Decimal128
 
   @IsNotEmptyObject()
   @ValidateNested()
