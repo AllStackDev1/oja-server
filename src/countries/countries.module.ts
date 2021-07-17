@@ -11,6 +11,6 @@ import { Country, CountrySchema } from './schemas/country.schema'
   ],
   controllers: [CountriesController],
   providers: [CountriesService],
-  exports: [CountriesService]
+  exports: [CountriesService, MongooseModule]
 })
 export class CountriesModule {}

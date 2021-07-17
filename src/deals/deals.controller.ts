@@ -2,7 +2,6 @@ import {
   Get,
   Post,
   Body,
-  Patch,
   Param,
   Query,
   Delete,
@@ -17,12 +16,10 @@ import {
 
 import { DealsService } from './deals.service'
 import { CreateDealDto } from './dto/create-deal.dto'
-import { UpdateDealDto } from './dto/update-deal.dto'
-import { ObjectPayloadDto } from 'lib/interfaces'
 import { JwtAuthGuard } from 'auth/jwt-auth.guard'
 import { IDPayloadDto } from 'lib/id.dto'
 import { UserDto } from 'users/dto'
-
+import { QueryDealDto } from './dto'
 @UseGuards(JwtAuthGuard)
 @Controller('deals')
 export class DealsController {
@@ -52,14 +49,24 @@ export class DealsController {
   }
 
   /**
-   * @description Payload may be null it will fetch all user records
-   * @param payload.email
-   * @param payload.username
-   * @returns HTTP response
+   * @description
+   * This method handles the http request for get:deals, it returns
+   * deals with it latest transaction. The result also depends on the payload query
+   * @typedef {string} DealStatusEnum
+   * @enum {(DealStatusEnum)}
+   * @param {DealStatusEnum} payload.status
+   * @returns Response payload
    */
   @Get()
-  async findByPayload(@Query() payload: ObjectPayloadDto) {
-    const result = await this.service.find(payload)
+  async findByPayload(
+    @Request() req: Record<string, UserDto>,
+    @Query() payload: QueryDealDto
+  ) {
+    let query: QueryDealDto = payload
+    if (!req.user.isAdmin) {
+      query = { user: String(req.user._id), ...payload }
+    }
+    const result = await this.service.find(query)
     if (!result.success) {
       throw new HttpException(result.message, HttpStatus.BAD_REQUEST)
     }
@@ -67,20 +74,8 @@ export class DealsController {
   }
 
   @Get(':id')
-  async findOne(@Param() params: IDPayloadDto) {
+  async findById(@Param() params: IDPayloadDto) {
     const result = await this.service.findById(params.id)
-    if (!result.success) {
-      throw new HttpException(result.message, HttpStatus.BAD_REQUEST)
-    }
-    return result
-  }
-
-  @Patch(':id')
-  async update(
-    @Param() params: IDPayloadDto,
-    @Body() updateDealDto: UpdateDealDto
-  ) {
-    const result = await this.service.update(params.id, updateDealDto)
     if (!result.success) {
       throw new HttpException(result.message, HttpStatus.BAD_REQUEST)
     }

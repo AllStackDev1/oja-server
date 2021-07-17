@@ -178,8 +178,14 @@ export class AuthService {
       })
       // if user exist and user password match
       if (user && user.comparePassword(payload.password)) {
-        // response.data = this._createToken(user, expiresIn)
-        response.data = await this.termiiService.sendOtp(user.phoneNumber)
+        if (user.twoFactorAuth) {
+          response.data = await this.termiiService.sendOtp(user.phoneNumber)
+        } else {
+          response.data = {
+            user,
+            authToken: this._createToken(user, expiresIn)
+          }
+        }
       } else {
         throw new Error('Incorrect email or password')
       }

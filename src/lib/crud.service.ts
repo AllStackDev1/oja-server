@@ -1,4 +1,4 @@
-import { Model } from 'mongoose'
+import { Model, ObjectId } from 'mongoose'
 import { ResponsePayload } from 'lib/interfaces'
 import * as pluralize from 'pluralize'
 
@@ -33,7 +33,7 @@ export abstract class CrudService<M, C, U> {
     return response
   }
 
-  async findById(id: string | number): Promise<ResponsePayload<M, string>> {
+  async findById(id: ObjectId): Promise<ResponsePayload<M, string>> {
     let response: ResponsePayload<M, string> = {
       success: true,
       message: `${this.name} found`
@@ -63,10 +63,7 @@ export abstract class CrudService<M, C, U> {
     return response
   }
 
-  async update(
-    id: string | number,
-    payload: U
-  ): Promise<ResponsePayload<M, string>> {
+  async update(id: ObjectId, payload: U): Promise<ResponsePayload<M, string>> {
     let response: ResponsePayload<M, string> = {
       success: true,
       message: `${this.name} updated successfully`
@@ -82,7 +79,7 @@ export abstract class CrudService<M, C, U> {
     return response
   }
 
-  async remove(id: string | number): Promise<ResponsePayload<M, string>> {
+  async remove(id: ObjectId): Promise<ResponsePayload<M, string>> {
     let response: ResponsePayload<M, string> = {
       success: true,
       message: `${this.name} deleted successfully`

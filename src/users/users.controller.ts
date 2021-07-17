@@ -9,10 +9,11 @@ import {
   Controller,
   HttpException,
   HttpStatus,
-  UseGuards
+  UseGuards,
+  Request
 } from '@nestjs/common'
 
-import { CreateUserDto, UpdateUserDto } from './dto'
+import { CreateUserDto, UpdateUserDto, UserDto } from './dto'
 import { JwtAuthGuard } from 'auth/jwt-auth.guard'
 import { ObjectPayloadDto } from 'lib/interfaces'
 import { UsersService } from './users.service'
@@ -35,7 +36,16 @@ export class UsersController {
    */
   @UseGuards(JwtAuthGuard)
   @Post()
-  async create(@Body() dto: CreateUserDto) {
+  async create(
+    @Request() req: Record<string, UserDto>,
+    @Body() dto: CreateUserDto
+  ) {
+    if (!req.user.isAdmin) {
+      throw new HttpException(
+        'You are not authorized to perform this action',
+        HttpStatus.FORBIDDEN
+      )
+    }
     const result = await this.service.create(dto)
     if (!result.success) {
       throw new HttpException(result.message, HttpStatus.BAD_REQUEST)
@@ -49,7 +59,6 @@ export class UsersController {
    * @param payload.username
    * @returns HTTP response
    */
-
   @UseGuards(JwtAuthGuard)
   @Get()
   async findByPayload(@Query() payload: ObjectPayloadDto) {

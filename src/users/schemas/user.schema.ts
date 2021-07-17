@@ -47,6 +47,9 @@ export class User {
 
   @Prop({ default: false })
   isAdmin: boolean
+
+  @Prop({ default: false })
+  twoFactorAuth: boolean
 }
 
 const schema = SchemaFactory.createForClass(User)

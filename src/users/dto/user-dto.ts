@@ -19,4 +19,6 @@ export class UserDto extends PartialType(CreateUserDto) {
   readonly status: StatusEnum
 
   readonly isEmailVerified: boolean
+
+  readonly twoFactorAuth: boolean
 }

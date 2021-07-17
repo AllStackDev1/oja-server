@@ -1,7 +1,7 @@
-import { IsString, IsNotEmpty } from 'class-validator'
+import { IsNotEmpty } from 'class-validator'
+import { ObjectId } from 'mongoose'
 
 export class IDPayloadDto {
-  @IsString()
   @IsNotEmpty()
-  readonly id: string
+  readonly id: ObjectId
 }

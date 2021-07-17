@@ -13,8 +13,12 @@ import {
 
 export class AccountDetails {
   @IsNotEmpty()
+  @IsNumber()
+  readonly amount: Decimal128
+
+  @IsNotEmpty()
   @IsString()
-  readonly currency: string
+  readonly currencySymbol: string
 
   @IsNotEmpty()
   @IsString()
@@ -31,10 +35,6 @@ export class AccountDetails {
   @IsNotEmpty()
   @IsString()
   readonly accountNumber: string
-
-  @IsNotEmpty()
-  @IsNumber()
-  readonly amount: Decimal128
 }
 
 export class CreateDealDto {

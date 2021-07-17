@@ -11,6 +11,7 @@ export enum StatusEnum {
   ACTIVE = 'ACTIVE',
   INACTIVE = 'INACTIVE'
 }
+
 export interface IUser extends Document {
   _id: ObjectId
   email: string
@@ -24,9 +25,12 @@ export interface IUser extends Document {
   dateOfBirth: Date
   status: StatusEnum
   phoneNumber: string
+  twoFactorAuth: boolean
   isEmailVerified: boolean
   save(p?: any): Promise<any>
   comparePassword(p: string): boolean
+  createdAt: Date
+  updatedAt: Date
 }
 
 export interface GetUserByPayloadStatus {
@@ -92,12 +96,30 @@ export interface ICountry extends Document {
 }
 
 export interface IAccountDetails {
-  currency: string
+  currencySymbol: string
   bankName: string
   swiftCode: string
   accountName: string
   accountNumber: string
   amount: Decimal128
+}
+
+export enum TransactionTypeEnum {
+  SENT = 'Sent',
+  RECEIVED = 'Received'
+}
+
+export interface ITransaction extends Document {
+  user: IUser
+  amount: Decimal128
+  createdAt: string
+  type: TransactionTypeEnum
+}
+
+export enum DealStatusEnum {
+  COMPLETED = 'COMPLETED',
+  PROCESSING = 'PROCESSING',
+  PENDING = 'PENDING'
 }
 
 export interface IDeal extends Document {
@@ -106,11 +128,40 @@ export interface IDeal extends Document {
   rate: Decimal128
   transactionFee: Decimal128
   settlementFee: Decimal128
-  debitDetails: IAccountDetails
-  creditDetails: IAccountDetails
+  debit: IAccountDetails
+  credit: IAccountDetails
+  status: DealStatusEnum
+  transactions: [ITransaction]
+  transaction: ITransaction
+  createdAt: string
+}
+
+export interface IActiveDealsLatestTransaction {
+  _id: ObjectId
+  debit: {
+    currencySymbol: string
+    currencyName: string
+    amount: number
+  }
+  credit: {
+    currencySymbol: string
+    currencyName: string
+    amount: number
+  }
+  progress: number
+  latestTransaction: {
+    type: string
+    amount: number
+    username: string
+    createdAt: string
+  }
 }
 
 export interface IQueue extends Document {
   _id: ObjectId
   deal: IDeal
+}
+
+export interface IAny {
+  [key: string]: string
 }
