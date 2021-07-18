@@ -93,23 +93,20 @@ export class AuthService {
       })
 
       response.user = user
-      // generate an auth token which will allow the user access into
-      // the application
+      // generate an auth token which will allow the user access into the application
       response.authToken = this._createToken(response.user, payload.expiresIn)
-
-      // To make sure that user only receive this once we check
-      // if the user is already active, as this method wil be reused
-      // for subsequent otp verifications
-      if (response.user.status !== StatusEnum.ACTIVE) {
-        response.user.status = StatusEnum.ACTIVE
-        await response.user.save()
+      // To make sure that user only receive this once we check if the user is already active,
+      // as this method wil be reused for subsequent login request
+      if (user.status !== StatusEnum.ACTIVE) {
+        user.status = StatusEnum.ACTIVE
+        await user.save()
         // insatiate DTO class
         const phoneNumberVerifiedEvent = new OTPVerifiedEventDto()
         // set up object
-        phoneNumberVerifiedEvent.email = response.user.email
+        phoneNumberVerifiedEvent.email = user.email
         phoneNumberVerifiedEvent.fullName = [
-          response.user.firstName,
-          response.user.lastName
+          user.firstName,
+          user.lastName
         ].join(' ')
         phoneNumberVerifiedEvent.link = `${clientUrl}/auth/verify-email/${response.authToken}`
         // emit phone number verified event
@@ -172,20 +169,18 @@ export class AuthService {
       message: 'User found'
     }
     try {
-      // find user in db
+      // find user using email or username
       const { data: user } = await this.usersService.findOne({
         $or: [{ email: payload.email }, { username: payload.username }]
       })
       // if user exist and user password match
       if (user && user.comparePassword(payload.password)) {
-        // if user opt for 2FA
-        if (user.twoFactorAuth) {
+        // if user opt for 2FA or if user has yet to verified phone number
+        if (user.twoFactorAuth || user.status !== StatusEnum.ACTIVE) {
           response.data = await this.termiiService.sendOtp(user.phoneNumber)
         } else {
-          response.data = {
-            user,
-            authToken: this._createToken(user, expiresIn)
-          }
+          const authToken = this._createToken(user, expiresIn)
+          response.data = { user, authToken }
         }
       } else {
         throw new Error('Incorrect email or password')
