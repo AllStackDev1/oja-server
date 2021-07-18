@@ -178,6 +178,7 @@ export class AuthService {
       })
       // if user exist and user password match
       if (user && user.comparePassword(payload.password)) {
+        // if user opt for 2FA
         if (user.twoFactorAuth) {
           response.data = await this.termiiService.sendOtp(user.phoneNumber)
         } else {
