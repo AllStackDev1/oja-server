@@ -17,6 +17,9 @@ export class Deal {
   })
   user: User
 
+  @Prop({ required: true })
+  type: string
+
   @Prop({ type: MongooseSchema.Types.Decimal128, required: true })
   rate: Types.Decimal128
 

@@ -11,5 +11,8 @@
     "eslint.validate": [
       "javascript",
       "typescript"
+    ],
+    "cSpell.words": [
+      "originalname"
     ]
   }

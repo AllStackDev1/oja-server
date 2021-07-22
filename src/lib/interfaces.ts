@@ -125,6 +125,7 @@ export enum DealStatusEnum {
 export interface IDeal extends Document {
   _id: ObjectId
   user: IUser
+  type: string
   rate: Decimal128
   transactionFee: Decimal128
   settlementFee: Decimal128
@@ -134,27 +135,6 @@ export interface IDeal extends Document {
   transactions: [ITransaction]
   transaction: ITransaction
   createdAt: string
-}
-
-export interface IActiveDealsLatestTransaction {
-  _id: ObjectId
-  debit: {
-    currencySymbol: string
-    currencyName: string
-    amount: number
-  }
-  credit: {
-    currencySymbol: string
-    currencyName: string
-    amount: number
-  }
-  progress: number
-  latestTransaction: {
-    type: string
-    amount: number
-    username: string
-    createdAt: string
-  }
 }
 
 export interface IQueue extends Document {

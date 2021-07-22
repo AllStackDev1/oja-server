@@ -17,6 +17,7 @@ import { AuthModule } from 'auth/auth.module'
 import { UsersModule } from 'users/users.module'
 import { DealsModule } from './deals/deals.module'
 import { QueuesModule } from './queues/queues.module'
+import { CurrenciesModule } from './currencies/currencies.module'
 
 // environment variables
 import {
@@ -27,7 +28,6 @@ import {
   smtpPort,
   smtpHost
 } from 'app.environment'
-import { CountriesModule } from './countries/countries.module'
 
 @Module({
   imports: [
@@ -35,6 +35,7 @@ import { CountriesModule } from './countries/countries.module'
     UsersModule,
     DealsModule,
     QueuesModule,
+    CurrenciesModule,
     ScheduleModule.forRoot(),
     EventEmitterModule.forRoot(),
     MongooseModule.forRootAsync({
@@ -63,8 +64,7 @@ import { CountriesModule } from './countries/countries.module'
           strict: true
         }
       }
-    }),
-    CountriesModule
+    })
   ],
   controllers: [AppController],
   providers: [AppService]

@@ -10,9 +10,6 @@ export class Details {
   swiftCode: string
 
   @Prop({ required: true })
-  currencySymbol: string
-
-  @Prop({ required: true })
   bankName: string
 
   @Prop({ required: true })

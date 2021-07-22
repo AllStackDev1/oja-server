@@ -18,10 +18,6 @@ export class AccountDetails {
 
   @IsNotEmpty()
   @IsString()
-  readonly currencySymbol: string
-
-  @IsNotEmpty()
-  @IsString()
   readonly bankName: string
 
   @IsOptional()
@@ -45,6 +41,10 @@ export class CreateDealDto {
   @IsNotEmpty()
   @IsNumber()
   readonly rate: Decimal128
+
+  @IsNotEmpty()
+  @IsString()
+  readonly type: string
 
   @IsNotEmpty()
   @IsNumber()

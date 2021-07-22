@@ -4,16 +4,16 @@ import { MongooseModule } from '@nestjs/mongoose'
 import { DealsService } from './deals.service'
 import { DealsController } from './deals.controller'
 import { Deal, DealSchema } from 'deals/schemas/deal.schema'
-import { CountriesService } from 'countries/countries.service'
-import { CountriesModule } from 'countries/countries.module'
+import { CurrenciesService } from 'currencies/currencies.service'
+import { CurrenciesModule } from 'currencies/currencies.module'
 
 @Module({
   imports: [
-    CountriesModule,
+    CurrenciesModule,
     MongooseModule.forFeature([{ name: Deal.name, schema: DealSchema }])
   ],
   controllers: [DealsController],
-  providers: [DealsService, CountriesService],
+  providers: [DealsService, CurrenciesService],
   exports: [DealsService]
 })
 export class DealsModule {}

@@ -3,15 +3,10 @@ import { Injectable } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import * as pluralize from 'pluralize'
 
-import { CountriesService } from 'countries/countries.service'
-import {
-  IActiveDealsLatestTransaction,
-  IDeal,
-  ResponsePayload,
-  TransactionTypeEnum
-} from 'lib/interfaces'
+import { IDeal, ResponsePayload, TransactionTypeEnum } from 'lib/interfaces'
 import { CreateDealDto, UpdateDealDto } from './dto'
 import { CrudService } from 'lib/crud.service'
+import { CurrenciesService } from 'currencies/currencies.service'
 
 @Injectable()
 export class DealsService extends CrudService<
@@ -24,7 +19,7 @@ export class DealsService extends CrudService<
   constructor(
     @InjectModel('Deal')
     protected readonly model: Model<IDeal>,
-    private readonly countriesService: CountriesService
+    private readonly currenciesService: CurrenciesService
   ) {
     super(model)
   }
@@ -41,11 +36,9 @@ export class DealsService extends CrudService<
 
       // we query the countries service to get the details of the
       // currencies involved in this deal.
-      const { data } = await this.countriesService.find({
-        $or: [
-          { 'currency.symbol': doc.debit.currencySymbol },
-          { 'currency.symbol': doc.credit.currencySymbol }
-        ]
+      const type = doc.type.split('_')
+      const { data } = await this.currenciesService.find({
+        $or: [{ code: type[0] }, { code: type[1] }]
       })
 
       // calculate the total amount received to fulfill the credit amount,
@@ -65,9 +58,13 @@ export class DealsService extends CrudService<
         }))
       }
 
+      const debitCurrency = data.find(e => e.code === type[0])
+      const creditCurrency = data.find(e => e.code === type[1])
+
       response.data = {
         _id: doc._id,
         rate: +doc.rate,
+        type: doc.type,
         transactions,
         createdAt: doc.createdAt,
         settlementFee: +doc.settlementFee,
@@ -79,16 +76,20 @@ export class DealsService extends CrudService<
         debit: {
           ...doc.debit,
           amount: +doc.debit.amount,
-          currencyName: data.find(
-            e => e.currency.symbol === doc.debit.currencySymbol
-          ).currency.name
+          currency: {
+            name: debitCurrency.name,
+            code: debitCurrency.code,
+            symbol: debitCurrency.symbol
+          }
         },
         credit: {
           ...doc.credit,
           amount: +doc.credit.amount,
-          currencyName: data.find(
-            e => e.currency.symbol === doc.credit.currencySymbol
-          ).currency.name
+          currency: {
+            name: creditCurrency.name,
+            code: creditCurrency.code,
+            symbol: creditCurrency.symbol
+          }
         }
       }
       response.message = `${this.name} found`
@@ -99,7 +100,7 @@ export class DealsService extends CrudService<
   }
 
   async find(payload: any): Promise<ResponsePayload<any[], string>> {
-    let response: ResponsePayload<IActiveDealsLatestTransaction[], string> = {
+    let response: ResponsePayload<any[], string> = {
       success: true
     }
     try {
@@ -131,14 +132,18 @@ export class DealsService extends CrudService<
 
           // we query the countries service to get the details of the
           // currencies involved in this deal.
-          const { data } = await this.countriesService.find({
-            $or: [
-              { 'currency.symbol': doc.debit.currencySymbol },
-              { 'currency.symbol': doc.credit.currencySymbol }
-            ]
+          const type = doc.type.split('_')
+          const { data } = await this.currenciesService.find({
+            $or: [{ code: type[0] }, { code: type[1] }]
           })
+
+          const debitCurrency = data.find(e => e.code === type[0])
+          const creditCurrency = data.find(e => e.code === type[1])
+
           return {
             _id: doc._id,
+            type: doc.type,
+            rate: +doc.rate,
             createdAt: doc.createdAt,
             progress:
               Math.round(
@@ -146,17 +151,19 @@ export class DealsService extends CrudService<
               ) / 100,
             debit: {
               amount: +doc.debit.amount,
-              currencyName: data.find(
-                e => e.currency.symbol === doc.debit.currencySymbol
-              ).currency.name,
-              currencySymbol: doc.debit.currencySymbol
+              currency: {
+                name: debitCurrency.name,
+                code: debitCurrency.code,
+                symbol: debitCurrency.symbol
+              }
             },
             credit: {
               amount: +doc.credit.amount,
-              currencyName: data.find(
-                e => e.currency.symbol === doc.credit.currencySymbol
-              ).currency.name,
-              currencySymbol: doc.credit.currencySymbol
+              currency: {
+                name: creditCurrency.name,
+                code: creditCurrency.code,
+                symbol: creditCurrency.symbol
+              }
             },
             latestTransaction: lt && {
               ...lt,
