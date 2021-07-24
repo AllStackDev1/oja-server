@@ -26,7 +26,7 @@ export class QueuesService extends CrudService<
     @InjectModel('Queue')
     protected readonly model: Model<IQueue>,
     @Inject(forwardRef(() => DealsService))
-    private readonly dService: DealsService
+    private readonly dealsService: DealsService
   ) {
     super(model)
   }
@@ -46,27 +46,27 @@ export class QueuesService extends CrudService<
     return response
   }
 
-  private _process = async (q1: IQueue, q2: IQueue) => {
+  private _process = async (e1: IQueue, e2: IQueue) => {
     try {
       // check to see if the queue deals has at least on deal
-      if (q1.deals.length && q2.deals.length) {
+      if (e1.deals.length && e2.deals.length) {
         this.logger.debug(
-          `processing queue with #id ${q1._id} of type ${q1.type} and queue with #id ${q2.id} of type ${q2.type}...`
+          `processing exchange with #id ${e1._id} of type ${e1.type} and exchange with #id ${e2.id} of type ${e2.type}...`
         )
 
-        const queueIds = [q1.id, q2.id]
-        // set q1 & q2 isProcessing to true
-        queueIds.forEach(async id => {
+        const eIds = [e1.id, e2.id]
+        // set e1 & e1 isProcessing to true
+        eIds.forEach(async id => {
           await this.model.findByIdAndUpdate(id, { isProcessing: true })
         })
 
         // pop(pick) the first item in each deals array
         // to perform a transaction on each
-        this._transact(q1._id, q1.deals[0], q2.deals[0])
-        this._transact(q2._id, q2.deals[0], q1.deals[0])
+        this._transact(e1._id, e1.deals[0], e2.deals[0])
+        this._transact(e2._id, e2.deals[0], e1.deals[0])
       } else {
         this.logger.debug(
-          `Could not process queue with #id ${q1._id} of type ${q1.type} and queue with #id ${q2.id} of type ${q2.type}...`
+          `Could not process exchange with #id ${e1._id} of type ${e1.type} and exchange with #id ${e2.id} of type ${e2.type}...`
         )
       }
     } catch (err) {
@@ -75,15 +75,15 @@ export class QueuesService extends CrudService<
   }
 
   private _transact = async (
-    queueId: ObjectId,
-    receiver: IDeal,
-    sender: IDeal
+    eId: ObjectId,
+    eReceiver: IDeal,
+    eSender: IDeal
   ) => {
     try {
       // determine the debitable amount left from the sender
       const debitableAmountLeft =
-        +sender.debit.amount -
-        sender.transactions.reduce((a, b) => {
+        +eSender.debit.amount -
+        eSender.transactions.reduce((a, b) => {
           return (b.type === TransactionTypeEnum.SENT && a + +b.amount) || a
         }, 0)
       this.logger.debug(
@@ -91,8 +91,8 @@ export class QueuesService extends CrudService<
       )
       // determine the creditable amount left from the receiver
       const creditableAmountLeft =
-        +receiver.credit.amount -
-        receiver.transactions.reduce((a, b) => {
+        +eReceiver.credit.amount -
+        eReceiver.transactions.reduce((a, b) => {
           return (b.type === TransactionTypeEnum.RECEIVED && a + +b.amount) || a
         }, 0)
       this.logger.debug(
@@ -101,50 +101,50 @@ export class QueuesService extends CrudService<
       if (creditableAmountLeft <= debitableAmountLeft) {
         // send creditable amount left as the amount to debit from the sender to the receiver
         // this receiver(deal) is fulfilled and needs to be remove from queue
-        await this.model.findByIdAndUpdate(queueId, {
+        await this.model.findByIdAndUpdate(eId, {
           isProcessing: false,
           $pop: { deals: -1 }
         })
         // create transaction record for receiver
-        await this.dService.addTransaction(
-          receiver.id,
+        await this.dealsService.addTransaction(
+          eReceiver.id,
           DealStatusEnum.COMPLETED,
           {
             type: TransactionTypeEnum.RECEIVED,
-            user: sender.user._id,
+            user: eSender.user._id,
             amount: creditableAmountLeft
           }
         )
         // create transaction record for sender
-        await this.dService.addTransaction(sender._id, null, {
+        await this.dealsService.addTransaction(eSender._id, null, {
           type: TransactionTypeEnum.SENT,
-          user: receiver.user._id,
+          user: eReceiver.user._id,
           amount: creditableAmountLeft
         })
 
-        this.logger.debug(`Deal ${receiver.id} is now fulfilled`)
+        this.logger.debug(`Deal ${eReceiver.id} is now fulfilled`)
       } else {
         // send debitable amount left as the amount to debit from the sender to the receiver
-        await this.model.findByIdAndUpdate(queueId, {
+        await this.model.findByIdAndUpdate(eId, {
           isProcessing: false
         })
         // create transaction record for receiver
-        await this.dService.addTransaction(
-          receiver.id,
+        await this.dealsService.addTransaction(
+          eReceiver.id,
           DealStatusEnum.PROCESSING,
           {
             type: TransactionTypeEnum.RECEIVED,
-            user: sender.user._id,
+            user: eSender.user._id,
             amount: creditableAmountLeft
           }
         )
         // create transaction record for sender
-        await this.dService.addTransaction(sender.id, null, {
+        await this.dealsService.addTransaction(eSender.id, null, {
           type: TransactionTypeEnum.SENT,
-          user: receiver.user._id,
+          user: eReceiver.user._id,
           amount: debitableAmountLeft
         })
-        this.logger.debug(`Deal ${receiver.id} is yet to be fulfilled`)
+        this.logger.debug(`Deal ${eReceiver.id} is yet to be fulfilled`)
       }
     } catch (err) {
       this.logger.error(err)
@@ -155,28 +155,29 @@ export class QueuesService extends CrudService<
   async startProcessingQueues() {
     try {
       this.logger.debug('Processing Queues in progress...')
-      const queues: IQueue[] = await this.model
+      const exchanges: IQueue[] = await this.model
         .find()
         .populate('deals')
         .populate({ path: 'deals.user', select: '_id' })
       this.logger.debug('Queues is now fetched...')
       const checkers: string[] = []
-      // queues = JSON.parse(JSON.stringify(queues))
-      queues.forEach(queue => {
+      exchanges.forEach(exchange => {
         // check if queue type is already been processed
-        if (!checkers.includes(queue.type)) {
-          // get the opposite queue type
-          const oppQueueType = queue.type.split('_').reverse().join('_')
+        if (!checkers.includes(exchange.type)) {
+          // get the opposite exchange type
+          const oppExchangeType = exchange.type.split('_').reverse().join('_')
           this.logger.debug(
-            `Opposite queue type is now determined as ${oppQueueType}`
+            `Opposite exchange type is now determined as ${oppExchangeType}`
           )
           // update checker passing queue.type and opposite queue type as been processed
-          checkers.push(queue.type, oppQueueType)
+          checkers.push(exchange.type, oppExchangeType)
           // find the opposite queue data object
-          const oppQueue = queues.find(queue => queue.type === oppQueueType)
-          this.logger.debug('Opposite queue data retrieved')
+          const oppExchange = exchanges.find(
+            exchange => exchange.type === oppExchangeType
+          )
+          this.logger.debug('Opposite exchange data retrieved')
           // call the process method
-          this._process(queue, oppQueue)
+          this._process(exchange, oppExchange)
         }
       })
     } catch (err) {
