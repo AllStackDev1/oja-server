@@ -100,7 +100,7 @@ export class DealsService extends CrudService<
 
         transactions = doc.transactions.map(t => ({
           ...t,
-          amount: +t.amount,
+          amount: +t.amount / 100,
           user: '@' + t.user.username
         }))
       }
@@ -114,15 +114,14 @@ export class DealsService extends CrudService<
         type: doc.type,
         transactions,
         createdAt: doc.createdAt,
-        settlementFee: +doc.settlementFee,
-        transactionFee: +doc.transactionFee,
-        progress:
-          Math.round(
-            (total / +doc.credit.amount) * 100 * 100 + Number.EPSILON
-          ) / 100,
+        settlementFee: +doc.settlementFee / 100,
+        transactionFee: +doc.transactionFee / 100,
+        progress: +parseFloat('' + (total / +doc.credit.amount) * 100).toFixed(
+          2
+        ),
         debit: {
           ...doc.debit,
-          amount: +doc.debit.amount,
+          amount: +doc.debit.amount / 100,
           currency: {
             name: debitCurrency.name,
             code: debitCurrency.code,
@@ -131,7 +130,7 @@ export class DealsService extends CrudService<
         },
         credit: {
           ...doc.credit,
-          amount: +doc.credit.amount,
+          amount: +doc.credit.amount / 100,
           currency: {
             name: creditCurrency.name,
             code: creditCurrency.code,
@@ -172,7 +171,6 @@ export class DealsService extends CrudService<
                 (b.type === TransactionTypeEnum.RECEIVED && a + +b.amount) || a
               )
             }, 0)
-            console.log(total)
             // pick the last transaction in the array which is the latest transaction
             lt = doc.transactions[doc.transactions.length - 1]
           }
@@ -192,12 +190,11 @@ export class DealsService extends CrudService<
             type: doc.type,
             rate: +doc.rate,
             createdAt: doc.createdAt,
-            progress:
-              Math.round(
-                (total / +doc.credit.amount) * 100 * 100 + Number.EPSILON
-              ) / 100,
+            progress: +parseFloat(
+              '' + (total / +doc.credit.amount) * 100
+            ).toFixed(2),
             debit: {
-              amount: +doc.debit.amount,
+              amount: +doc.debit.amount / 100,
               currency: {
                 name: debitCurrency.name,
                 code: debitCurrency.code,
@@ -205,7 +202,7 @@ export class DealsService extends CrudService<
               }
             },
             credit: {
-              amount: +doc.credit.amount,
+              amount: +doc.credit.amount / 100,
               currency: {
                 name: creditCurrency.name,
                 code: creditCurrency.code,
@@ -214,7 +211,7 @@ export class DealsService extends CrudService<
             },
             latestTransaction: lt && {
               ...lt,
-              amount: +lt.amount,
+              amount: +lt.amount / 100,
               user: '@' + lt.user.username
             }
           }

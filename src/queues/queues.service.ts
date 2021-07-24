@@ -49,7 +49,7 @@ export class QueuesService extends CrudService<
   private _process = async (e1: IQueue, e2: IQueue) => {
     try {
       // check to see if the queue deals has at least on deal
-      if (e1.deals.length && e2.deals.length) {
+      if (e1?.deals?.length && e2?.deals?.length) {
         this.logger.debug(
           `processing exchange with #id ${e1._id} of type ${e1.type} and exchange with #id ${e2.id} of type ${e2.type}...`
         )
@@ -65,9 +65,7 @@ export class QueuesService extends CrudService<
         this._transact(e1._id, e1.deals[0], e2.deals[0])
         this._transact(e2._id, e2.deals[0], e1.deals[0])
       } else {
-        this.logger.debug(
-          `Could not process exchange with #id ${e1._id} of type ${e1.type} and exchange with #id ${e2.id} of type ${e2.type}...`
-        )
+        this.logger.debug('Could not process exchange...')
       }
     } catch (err) {
       this.logger.error(err)
@@ -128,6 +126,12 @@ export class QueuesService extends CrudService<
         await this.model.findByIdAndUpdate(eId, {
           isProcessing: false
         })
+        // create transaction record for sender
+        await this.dealsService.addTransaction(eSender.id, null, {
+          type: TransactionTypeEnum.SENT,
+          user: eReceiver.user._id,
+          amount: debitableAmountLeft
+        })
         // create transaction record for receiver
         await this.dealsService.addTransaction(
           eReceiver.id,
@@ -135,15 +139,9 @@ export class QueuesService extends CrudService<
           {
             type: TransactionTypeEnum.RECEIVED,
             user: eSender.user._id,
-            amount: creditableAmountLeft
+            amount: debitableAmountLeft
           }
         )
-        // create transaction record for sender
-        await this.dealsService.addTransaction(eSender.id, null, {
-          type: TransactionTypeEnum.SENT,
-          user: eReceiver.user._id,
-          amount: debitableAmountLeft
-        })
         this.logger.debug(`Deal ${eReceiver.id} is yet to be fulfilled`)
       }
     } catch (err) {
@@ -156,7 +154,7 @@ export class QueuesService extends CrudService<
     try {
       this.logger.debug('Processing Queues in progress...')
       const exchanges: IQueue[] = await this.model
-        .find()
+        .find({ isProcessing: false })
         .populate('deals')
         .populate({ path: 'deals.user', select: '_id' })
       this.logger.debug('Queues is now fetched...')
