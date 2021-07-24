@@ -14,7 +14,7 @@ import {
 export class AccountDetails {
   @IsNotEmpty()
   @IsNumber()
-  readonly amount: Decimal128
+  readonly amount: Decimal128 | number
 
   @IsNotEmpty()
   @IsString()
@@ -40,7 +40,7 @@ export class CreateDealDto {
 
   @IsNotEmpty()
   @IsNumber()
-  readonly rate: Decimal128
+  readonly rate: Decimal128 | number
 
   @IsNotEmpty()
   @IsString()
@@ -48,11 +48,11 @@ export class CreateDealDto {
 
   @IsNotEmpty()
   @IsNumber()
-  readonly transactionFee: Decimal128
+  readonly transactionFee: Decimal128 | number
 
   @IsNotEmpty()
   @IsNumber()
-  readonly settlementFee: Decimal128
+  readonly settlementFee: Decimal128 | number
 
   @IsNotEmptyObject()
   @ValidateNested()

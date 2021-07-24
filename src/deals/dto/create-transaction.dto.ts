@@ -10,7 +10,7 @@ export class CreateTransactionDto {
 
   @IsNotEmpty()
   @IsNumber()
-  readonly amount: Decimal128
+  readonly amount: Decimal128 | number
 
   @IsNotEmpty()
   @IsString()

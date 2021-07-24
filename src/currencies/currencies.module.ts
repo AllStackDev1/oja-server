@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common'
 import { MongooseModule } from '@nestjs/mongoose'
+import { MulterModule } from '@nestjs/platform-express'
 
 import { CurrenciesService } from './currencies.service'
 import { CurrenciesController } from './currencies.controller'
 import { Currency, CurrencySchema } from './schemas/currency.schema'
-import { MulterModule } from '@nestjs/platform-express'
 
 @Module({
   imports: [

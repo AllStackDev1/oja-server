@@ -15,7 +15,7 @@ export class Rate {
   currency: Currency
 
   @Prop({ type: MongooseSchema.Types.Decimal128, required: true })
-  value: Decimal128
+  value: Decimal128 | number
 }
 
 export const RateSchema = SchemaFactory.createForClass(Rate)

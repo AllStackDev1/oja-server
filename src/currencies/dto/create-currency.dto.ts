@@ -20,7 +20,7 @@ export class RateDto {
   @IsNumber()
   @IsDefined()
   @IsNotEmpty()
-  readonly value: Decimal128
+  readonly value: Decimal128 | number
 }
 
 export class CreateCurrencyDto {

@@ -82,7 +82,7 @@ export interface IPhone extends Document {
 
 export interface IRate extends Document {
   name: string
-  rate: Decimal128
+  rate: Decimal128 | number
 }
 
 export interface ICountry extends Document {
@@ -101,7 +101,7 @@ export interface IAccountDetails {
   swiftCode: string
   accountName: string
   accountNumber: string
-  amount: Decimal128
+  amount: Decimal128 | number
 }
 
 export enum TransactionTypeEnum {
@@ -111,7 +111,7 @@ export enum TransactionTypeEnum {
 
 export interface ITransaction extends Document {
   user: IUser
-  amount: Decimal128
+  amount: Decimal128 | number
   createdAt: string
   type: TransactionTypeEnum
 }
@@ -126,9 +126,9 @@ export interface IDeal extends Document {
   _id: ObjectId
   user: IUser
   type: string
-  rate: Decimal128
-  transactionFee: Decimal128
-  settlementFee: Decimal128
+  rate: Decimal128 | number
+  transactionFee: Decimal128 | number
+  settlementFee: Decimal128 | number
   debit: IAccountDetails
   credit: IAccountDetails
   status: DealStatusEnum
@@ -139,7 +139,9 @@ export interface IDeal extends Document {
 
 export interface IQueue extends Document {
   _id: ObjectId
-  deal: IDeal
+  type: string
+  deals: IDeal[]
+  isProcessing: boolean
 }
 
 export interface IAny {

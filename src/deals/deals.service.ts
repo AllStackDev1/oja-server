@@ -1,12 +1,20 @@
 import { Model, ObjectId } from 'mongoose'
-import { Injectable } from '@nestjs/common'
+import { Injectable, Inject, forwardRef } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import * as pluralize from 'pluralize'
 
-import { IDeal, ResponsePayload, TransactionTypeEnum } from 'lib/interfaces'
-import { CreateDealDto, UpdateDealDto } from './dto'
 import { CrudService } from 'lib/crud.service'
 import { CurrenciesService } from 'currencies/currencies.service'
+import { QueuesService } from 'queues/queues.service'
+
+import {
+  DealStatusEnum,
+  IDeal,
+  ResponsePayload,
+  TransactionTypeEnum
+} from 'lib/interfaces'
+import { CreateDealDto, UpdateDealDto } from './dto'
+import { CreateTransactionDto } from './dto/create-transaction.dto'
 
 @Injectable()
 export class DealsService extends CrudService<
@@ -19,9 +27,48 @@ export class DealsService extends CrudService<
   constructor(
     @InjectModel('Deal')
     protected readonly model: Model<IDeal>,
-    private readonly currenciesService: CurrenciesService
+    private readonly cService: CurrenciesService,
+    @Inject(forwardRef(() => QueuesService))
+    private readonly qService: QueuesService
   ) {
     super(model)
+  }
+
+  async create(payload: CreateDealDto) {
+    const res1 = await super.create(payload)
+    if (res1.success) {
+      const res2 = await this.qService.addDeal(res1.data.type, res1.data._id)
+      if (res2.success) {
+        await this.qService.startProcessingQueues()
+      } else {
+        // TODO: Report critical error
+        console.log(res2.message)
+      }
+    }
+    return res1
+  }
+
+  async addTransaction(
+    id: ObjectId,
+    status: DealStatusEnum,
+    transaction: CreateTransactionDto
+  ) {
+    let response: ResponsePayload<IDeal, string> = {
+      success: true
+    }
+    try {
+      let payload = {}
+      if (status) {
+        payload = { $set: { status }, $push: { transactions: transaction } }
+      } else {
+        payload = { $push: { transactions: transaction } }
+      }
+
+      response.data = await this.model.findByIdAndUpdate(id, payload)
+    } catch (err) {
+      response = { success: false, message: err.message }
+    }
+    return response
   }
 
   async findById(id: ObjectId): Promise<ResponsePayload<any, string>> {
@@ -37,7 +84,7 @@ export class DealsService extends CrudService<
       // we query the countries service to get the details of the
       // currencies involved in this deal.
       const type = doc.type.split('_')
-      const { data } = await this.currenciesService.find({
+      const { data } = await this.cService.find({
         $or: [{ code: type[0] }, { code: type[1] }]
       })
 
@@ -133,7 +180,7 @@ export class DealsService extends CrudService<
           // we query the countries service to get the details of the
           // currencies involved in this deal.
           const type = doc.type.split('_')
-          const { data } = await this.currenciesService.find({
+          const { data } = await this.cService.find({
             $or: [{ code: type[0] }, { code: type[1] }]
           })
 

@@ -5,5 +5,10 @@ export class CreateQueueDto {
   @IsNotEmpty()
   @IsDefined()
   @IsString()
-  deal: ObjectId
+  type: string
+
+  @IsNotEmpty()
+  @IsDefined()
+  @IsString()
+  deals: ObjectId[]
 }
