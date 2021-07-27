@@ -101,7 +101,7 @@ export class DealsService extends CrudService<
         transactions = doc.transactions.map(t => ({
           ...t,
           amount: +t.amount / 100,
-          user: '@' + t.user.username
+          user: '@' + t.user?.username
         }))
       }
 
@@ -212,7 +212,7 @@ export class DealsService extends CrudService<
             latestTransaction: lt && {
               ...lt,
               amount: +lt.amount / 100,
-              user: '@' + lt.user.username
+              user: '@' + lt.user?.username
             }
           }
         })

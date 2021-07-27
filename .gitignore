@@ -38,3 +38,5 @@ lerna-debug.log*
 tsconfig.build.tsbuildinfo
 
 uploads
+
+files

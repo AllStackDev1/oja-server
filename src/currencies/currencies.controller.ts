@@ -9,13 +9,8 @@ import {
   UseGuards,
   HttpStatus,
   Controller,
-  UploadedFile,
-  HttpException,
-  UseInterceptors,
-  Request
+  HttpException
 } from '@nestjs/common'
-import { Express } from 'express'
-import { FileInterceptor } from '@nestjs/platform-express'
 
 import { JwtAuthGuard } from 'auth/jwt-auth.guard'
 import { IDPayloadDto } from 'lib/id.dto'
@@ -23,8 +18,6 @@ import { ObjectPayloadDto } from 'lib/interfaces'
 import { CurrenciesService } from './currencies.service'
 import { CreateCurrencyDto } from './dto/create-currency.dto'
 import { UpdateCurrencyDto } from './dto/update-currency.dto'
-import { diskStorage } from 'multer'
-import { FormDataBodyParserInterceptor } from 'lib/formdata-bodyparser'
 
 @Controller('currencies')
 export class CurrenciesController {
@@ -40,29 +33,7 @@ export class CurrenciesController {
    */
   // @UseGuards(JwtAuthGuard)
   @Post()
-  @UseInterceptors(
-    FileInterceptor('flag', {
-      storage: diskStorage({
-        destination: './uploads/flags',
-        filename: (req, file, cb) => {
-          return cb(null, file.originalname)
-        }
-      })
-    }),
-    FormDataBodyParserInterceptor(['rates', 'status'])
-  )
-  async create(
-    @Request() req,
-    @UploadedFile() flag: Express.Multer.File,
-    @Body() body: CreateCurrencyDto
-  ) {
-    if (!flag?.path) {
-      throw new HttpException(
-        'Flag image(svg) is required',
-        HttpStatus.BAD_REQUEST
-      )
-    }
-    body.flag = req.protocol + '://' + req.get('host') + '/' + flag.path
+  async create(@Body() body: CreateCurrencyDto) {
     const result = await this.service.create(body)
     if (!result.success) {
       throw new HttpException(result.message, HttpStatus.BAD_REQUEST)
@@ -97,30 +68,7 @@ export class CurrenciesController {
 
   // @UseGuards(JwtAuthGuard)
   @Patch(':id')
-  @UseInterceptors(
-    FileInterceptor('flag', {
-      storage: diskStorage({
-        destination: './uploads/flags',
-        filename: (req, file, cb) => {
-          return cb(null, file.originalname)
-        }
-      })
-    }),
-    FormDataBodyParserInterceptor(['rates', 'status'])
-  )
-  async update(
-    @Request() req,
-    @UploadedFile() flag: Express.Multer.File,
-    @Param() params: IDPayloadDto,
-    @Body() body: UpdateCurrencyDto
-  ) {
-    if (!flag?.path) {
-      throw new HttpException(
-        'Flag image(svg) is required',
-        HttpStatus.BAD_REQUEST
-      )
-    }
-    body.flag = req.protocol + '://' + req.get('host') + '/' + flag.path
+  async update(@Param() params: IDPayloadDto, @Body() body: UpdateCurrencyDto) {
     const result = await this.service.update(params.id, body)
     if (!result.success) {
       throw new HttpException(result.message, HttpStatus.BAD_REQUEST)
