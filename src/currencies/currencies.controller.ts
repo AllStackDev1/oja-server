@@ -13,11 +13,11 @@ import {
 } from '@nestjs/common'
 
 import { JwtAuthGuard } from 'auth/jwt-auth.guard'
-import { IDPayloadDto } from 'lib/id.dto'
-import { ObjectPayloadDto } from 'lib/interfaces'
+
 import { CurrenciesService } from './currencies.service'
 import { CreateCurrencyDto } from './dto/create-currency.dto'
 import { UpdateCurrencyDto } from './dto/update-currency.dto'
+import { IDPayloadDto, QueryDto } from 'lib/misc.dto'
 
 @Controller('currencies')
 export class CurrenciesController {
@@ -48,8 +48,8 @@ export class CurrenciesController {
    * @returns HTTP response
    */
   @Get()
-  async findByPayload(@Query() payload: ObjectPayloadDto) {
-    const result = await this.service.find(payload)
+  async findByPayload(@Query() payload: QueryDto) {
+    const result = await this.service.find(JSON.parse(payload.q || '{}'))
     if (!result.success) {
       throw new HttpException(result.message, HttpStatus.BAD_REQUEST)
     }

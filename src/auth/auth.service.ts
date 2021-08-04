@@ -40,15 +40,17 @@ export class AuthService {
     }
     try {
       // check to see if email or username already exist
-      const { data: foundUser } = await this.usersService.findOne({
+      const { data: user } = await this.usersService.findOne({
         $or: [
           { email: payload.email },
           { username: payload.username },
           { phoneNumber: payload.phoneNumber }
         ]
       })
-      if (foundUser) {
-        throw new Error('Email or username, or phone number already in use')
+      if (user) {
+        throw new Error(
+          'One of ["email", "username", "phoneNumber"] already in used for registration'
+        )
       }
       const {
         success,
@@ -97,7 +99,7 @@ export class AuthService {
       response.authToken = this._createToken(response.user, payload.expiresIn)
       // To make sure that user only receive this once we check if the user is already active,
       // as this method wil be reused for subsequent login request
-      if (user.status !== StatusEnum.ACTIVE) {
+      if (user.status === StatusEnum.INACTIVE) {
         user.status = StatusEnum.ACTIVE
         await user.save()
         // insatiate DTO class

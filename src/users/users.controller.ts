@@ -15,10 +15,8 @@ import {
 
 import { CreateUserDto, UpdateUserDto, UserDto } from './dto'
 import { JwtAuthGuard } from 'auth/jwt-auth.guard'
-import { ObjectPayloadDto } from 'lib/interfaces'
 import { UsersService } from './users.service'
-import { IDPayloadDto } from 'lib/id.dto'
-import { QueryDealDto } from 'deals/dto'
+import { IDPayloadDto, QueryDto } from 'lib/misc.dto'
 
 @Controller('users')
 export class UsersController {
@@ -62,8 +60,8 @@ export class UsersController {
    */
   @UseGuards(JwtAuthGuard)
   @Get()
-  async findByPayload(@Query() payload: ObjectPayloadDto) {
-    const result = await this.service.find(payload)
+  async findByPayload(@Query() payload: QueryDto) {
+    const result = await this.service.find(JSON.parse(payload.q || '{}'))
     if (!result.success) {
       throw new HttpException(result.message, HttpStatus.BAD_REQUEST)
     }
@@ -71,8 +69,8 @@ export class UsersController {
   }
 
   @Get('count')
-  async CountByPayload(@Query() payload: QueryDealDto) {
-    const result = await this.service.find(payload)
+  async CountByPayload(@Query() payload: QueryDto) {
+    const result = await this.service.find(JSON.parse(payload.q || '{}'))
     if (!result.success) {
       throw new HttpException(result.message, HttpStatus.BAD_REQUEST)
     }

@@ -9,7 +9,7 @@ import {
 
 import { JwtAuthGuard } from 'auth/jwt-auth.guard'
 import { QueuesService } from './queues.service'
-import { IDPayloadDto } from 'lib/id.dto'
+import { IDPayloadDto } from 'lib/misc.dto'
 
 @UseGuards(JwtAuthGuard)
 @Controller('queues')

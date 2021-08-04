@@ -17,9 +17,8 @@ import {
 import { DealsService } from './deals.service'
 import { CreateDealDto } from './dto/create-deal.dto'
 import { JwtAuthGuard } from 'auth/jwt-auth.guard'
-import { IDPayloadDto } from 'lib/id.dto'
+import { IDPayloadDto, QueryDto } from 'lib/misc.dto'
 import { UserDto } from 'users/dto'
-import { QueryDealDto } from './dto'
 @UseGuards(JwtAuthGuard)
 @Controller('deals')
 export class DealsController {
@@ -60,12 +59,13 @@ export class DealsController {
   @Get()
   async findByPayload(
     @Request() req: Record<string, UserDto>,
-    @Query() payload: QueryDealDto
+    @Query() payload: QueryDto
   ) {
-    let query: QueryDealDto = payload
+    let query: any = JSON.parse(payload.q || '{}')
     if (!req.user.isAdmin) {
-      query = { user: String(req.user._id), ...payload }
+      query = { ...query, user: String(req.user._id) }
     }
+
     const result = await this.service.find(query)
     if (!result.success) {
       throw new HttpException(result.message, HttpStatus.BAD_REQUEST)
