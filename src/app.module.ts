@@ -15,6 +15,7 @@ import { AppService } from 'app.service'
 // modules
 import { AuthModule } from 'auth/auth.module'
 import { UsersModule } from 'users/users.module'
+import { CronsModule } from './cron/cron.module'
 import { DealsModule } from './deals/deals.module'
 import { QueuesModule } from './queues/queues.module'
 import { CurrenciesModule } from './currencies/currencies.module'
@@ -35,6 +36,7 @@ import {
     UsersModule,
     DealsModule,
     QueuesModule,
+    CronsModule,
     CurrenciesModule,
     ScheduleModule.forRoot(),
     EventEmitterModule.forRoot(),

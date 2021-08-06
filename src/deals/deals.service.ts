@@ -27,9 +27,9 @@ export class DealsService extends CrudService<
   constructor(
     @InjectModel('Deal')
     protected readonly model: Model<IDeal>,
-    private readonly cService: CurrenciesService,
+    private readonly currenciesService: CurrenciesService,
     @Inject(forwardRef(() => QueuesService))
-    private readonly qService: QueuesService
+    private readonly queuesService: QueuesService
   ) {
     super(model)
   }
@@ -37,11 +37,11 @@ export class DealsService extends CrudService<
   async create(payload: CreateDealDto) {
     const res1 = await super.create(payload)
     if (res1.success) {
-      const res2 = await this.qService.addDeal(res1.data.type, res1.data._id)
-      if (res2.success) {
-        await this.qService.startProcessingQueues()
-      } else {
-        // TODO: Report critical error
+      const res2 = await this.queuesService._addDeal(
+        res1.data.type,
+        res1.data._id
+      )
+      if (!res2.success) {
         console.log(res2.message)
       }
     }
@@ -84,7 +84,7 @@ export class DealsService extends CrudService<
       // we query the countries service to get the details of the
       // currencies involved in this deal.
       const type = doc.type.split('_')
-      const { data } = await this.cService.find({
+      const { data } = await this.currenciesService.find({
         $or: [{ code: type[0] }, { code: type[1] }]
       })
 
@@ -178,7 +178,7 @@ export class DealsService extends CrudService<
           // we query the countries service to get the details of the
           // currencies involved in this deal.
           const type = doc.type.split('_')
-          const { data } = await this.cService.find({
+          const { data } = await this.currenciesService.find({
             $or: [{ code: type[0] }, { code: type[1] }]
           })
 
