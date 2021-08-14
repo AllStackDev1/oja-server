@@ -14,7 +14,7 @@ import {
 } from '@nestjs/common'
 
 import { CreateUserDto, UpdateUserDto, UserDto } from './dto'
-import { JwtAuthGuard } from 'auth/jwt-auth.guard'
+import { JwtAuthGuard } from 'jwt-auth/jwt-auth.guard'
 import { UsersService } from './users.service'
 import { IDPayloadDto, QueryDto } from 'lib/misc.dto'
 

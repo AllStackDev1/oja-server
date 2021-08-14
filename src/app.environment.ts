@@ -2,6 +2,7 @@ export const NODE_ENV = process.env.NODE_ENV || 'DEV'
 export const port = process.env.PORT || 3000
 
 export const clientUrl = process.env[`${NODE_ENV}_CLIENT_URL`]
+export const serverUrl = process.env[`${NODE_ENV}_SERVER_URL`]
 
 export const dbUrl = process.env[`${NODE_ENV}_DATABASE_URL`]
 export const dbName = process.env[`${NODE_ENV}_DATABASE_NAME`]
@@ -23,3 +24,9 @@ export const twilioVerSId =
 
 export const termiiKey = process.env[`${NODE_ENV}_TERMII_KEY`]
 export const termiiId = process.env[`${NODE_ENV}_TERMII_SENDER_ID`]
+
+export const googleId = process.env[`${NODE_ENV}_GOOGLE_ID`]
+export const googleSecret = process.env[`${NODE_ENV}_GOOGLE_SECRET`]
+
+export const facebookId = process.env[`${NODE_ENV}_FACEBOOK_ID`]
+export const facebookSecret = process.env[`${NODE_ENV}_FACEBOOK_SECRET`]

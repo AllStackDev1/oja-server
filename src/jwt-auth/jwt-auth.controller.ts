@@ -11,9 +11,10 @@ import {
   HttpException
 } from '@nestjs/common'
 
-import { AuthService } from './auth.service'
-import { CreateUserDto, LoginUserDto } from 'users/dto'
+import { JwtAuthService } from './jwt-auth.service'
 import { JwtAuthGuard } from './jwt-auth.guard'
+
+import { CreateUserDto, LoginUserDto } from 'users/dto'
 import {
   RegistrationStatus,
   VerifyOtpStatus,
@@ -26,14 +27,16 @@ import {
 } from './dto'
 
 @Controller('auth')
-export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+export class JwtAuthController {
+  constructor(private readonly jwtAuthService: JwtAuthService) {}
 
   @Post('register')
   public async register(
     @Body() payload: CreateUserDto
   ): Promise<RegistrationStatus> {
-    const result: RegistrationStatus = await this.authService.register(payload)
+    const result: RegistrationStatus = await this.jwtAuthService.register(
+      payload
+    )
     if (!result.success) {
       throw new HttpException(result.message, HttpStatus.BAD_REQUEST)
     }
@@ -44,7 +47,7 @@ export class AuthController {
   public async verifyOtp(
     @Body() payload: VerifyOtpPayloadDto
   ): Promise<VerifyOtpStatus> {
-    const result: VerifyOtpStatus = await this.authService.verifyOtp(payload)
+    const result: VerifyOtpStatus = await this.jwtAuthService.verifyOtp(payload)
 
     if (!result.success) {
       throw new HttpException(result.message, HttpStatus.BAD_REQUEST)
@@ -56,7 +59,7 @@ export class AuthController {
   public async resendOtp(
     @Body() payload: ResendOtpPayloadDto
   ): Promise<ResponsePayload<any, string>> {
-    const result = await this.authService.resendOtp(payload)
+    const result = await this.jwtAuthService.resendOtp(payload)
 
     if (!result.success) {
       throw new HttpException(result.message, HttpStatus.BAD_REQUEST)
@@ -68,7 +71,7 @@ export class AuthController {
   public async verifyEmail(
     @Param() params: VerifyEmailPayloadDto
   ): Promise<any> {
-    const result = await this.authService.verifyEmail(params.token)
+    const result = await this.jwtAuthService.verifyEmail(params.token)
 
     if (!result.success) {
       throw new HttpException(result.message, HttpStatus.BAD_REQUEST)
@@ -78,7 +81,7 @@ export class AuthController {
 
   @Post('login')
   public async login(@Body() payload: LoginUserDto): Promise<any> {
-    const result = await this.authService.validateUser(payload)
+    const result = await this.jwtAuthService.validateUser(payload)
     if (!result.success) {
       throw new HttpException(result.message, HttpStatus.UNAUTHORIZED)
     }
@@ -89,6 +92,6 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @Get('profile')
   public getProfile(@Request() req) {
-    return req.user
+    return { success: true, data: { user: req.user } }
   }
 }

@@ -17,15 +17,15 @@ import { Type } from 'class-transformer'
 export class Address {
   @IsString()
   @IsOptional()
-  readonly street: string
+  readonly street?: string
 
   @IsString()
   @IsOptional()
-  readonly city: string
+  readonly city?: string
 
   @IsString()
   @IsOptional()
-  readonly state: string
+  readonly state?: string
 
   @IsString()
   @IsNotEmpty()
@@ -57,6 +57,14 @@ export class CreateUserDto {
   @IsPhoneNumber()
   readonly phoneNumber: string
 
+  @IsNotEmpty()
+  @IsOptional()
+  readonly googleId: string
+
+  @IsNotEmpty()
+  @IsOptional()
+  readonly facebookId: string
+
   @IsNotEmptyObject()
   @ValidateNested()
   @IsDefined()
@@ -67,4 +75,8 @@ export class CreateUserDto {
   @IsString()
   @IsNotEmpty()
   readonly username: string
+
+  @IsString()
+  @IsOptional()
+  readonly avatar?: string
 }

@@ -13,12 +13,14 @@ import { AppController } from 'app.controller'
 import { AppService } from 'app.service'
 
 // modules
-import { AuthModule } from 'auth/auth.module'
 import { UsersModule } from 'users/users.module'
 import { CronsModule } from './cron/cron.module'
 import { DealsModule } from './deals/deals.module'
 import { QueuesModule } from './queues/queues.module'
+import { JwtAuthModule } from './jwt-auth/jwt-auth.module'
 import { CurrenciesModule } from './currencies/currencies.module'
+import { GoogleOauthModule } from './google-oauth/google-oauth.module'
+import { FacebookOauthModule } from './facebook-oauth/facebook-oauth.module'
 
 // environment variables
 import {
@@ -32,12 +34,14 @@ import {
 
 @Module({
   imports: [
-    AuthModule,
     UsersModule,
     DealsModule,
-    QueuesModule,
     CronsModule,
+    QueuesModule,
+    JwtAuthModule,
     CurrenciesModule,
+    GoogleOauthModule,
+    FacebookOauthModule,
     ScheduleModule.forRoot(),
     EventEmitterModule.forRoot(),
     MongooseModule.forRootAsync({

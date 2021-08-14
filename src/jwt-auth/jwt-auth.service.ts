@@ -20,10 +20,10 @@ import {
 import { CreateUserDto, LoginUserDto, UserDto } from 'users/dto'
 import { secret, expiresIn, clientUrl } from 'app.environment'
 import { UsersService } from 'users/users.service'
-import { TermiiService } from './termii.service'
+import { TermiiService } from '../lib/termii.service'
 
 @Injectable()
-export class AuthService {
+export class JwtAuthService {
   constructor(
     @InjectTwilio() private readonly twilioClient: TwilioClient,
     private readonly mailerService: MailerService,
@@ -193,7 +193,7 @@ export class AuthService {
     return response
   }
 
-  private _createToken({ _id, username }: UserDto, exp = expiresIn): string {
+  _createToken({ _id, username }: UserDto, exp = expiresIn): string {
     const A: JwtPayload = { sub: _id, username }
     const B = { secret, expiresIn: exp }
     return this.jwtService.sign(A, B).toString()

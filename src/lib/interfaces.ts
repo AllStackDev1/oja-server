@@ -22,6 +22,8 @@ export interface IUser extends Document {
   username: string
   firstName: string
   address: IAddress
+  googleId?: string
+  facebookId?: string
   dateOfBirth: Date
   status: StatusEnum
   phoneNumber: string

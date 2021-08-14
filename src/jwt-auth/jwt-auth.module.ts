@@ -1,24 +1,15 @@
-// dependencies
 import { HttpModule, Module } from '@nestjs/common'
 import { JwtModule } from '@nestjs/jwt'
 import { PassportModule } from '@nestjs/passport'
 import { TwilioModule } from 'nestjs-twilio'
 
-// controllers
-import { AuthController } from './auth.controller'
+import { JwtAuthController } from './jwt-auth.controller'
+import { JwtAuthService } from './jwt-auth.service'
+import { JwtAuthStrategy } from './jwt-auth.strategy'
 
-// services
-import { AuthService } from './auth.service'
-import { TermiiService } from './termii.service'
+import { TermiiService } from 'lib/termii.service'
 import { UsersService } from 'users/users.service'
-
-// module
 import { UsersModule } from 'users/users.module'
-
-// lib
-import { JwtStrategy } from './jwt.strategy'
-
-// environment variables
 import {
   expiresIn,
   secret,
@@ -44,8 +35,8 @@ import {
       authToken: twilioAuthToken
     })
   ],
-  controllers: [AuthController],
-  providers: [AuthService, UsersService, JwtStrategy, TermiiService],
+  controllers: [JwtAuthController],
+  providers: [JwtAuthService, UsersService, JwtAuthStrategy, TermiiService],
   exports: [PassportModule, JwtModule]
 })
-export class AuthModule {}
+export class JwtAuthModule {}

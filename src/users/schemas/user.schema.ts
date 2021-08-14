@@ -37,6 +37,12 @@ export class User {
   avatar: string
 
   @Prop()
+  googleId: string
+
+  @Prop()
+  facebookId: string
+
+  @Prop()
   dateOfBirth: Date
 
   @Prop({ type: String, enum: StatusEnum, default: StatusEnum.INACTIVE })

@@ -16,7 +16,7 @@ import {
 
 import { DealsService } from './deals.service'
 import { CreateDealDto } from './dto/create-deal.dto'
-import { JwtAuthGuard } from 'auth/jwt-auth.guard'
+import { JwtAuthGuard } from 'jwt-auth/jwt-auth.guard'
 import { IDPayloadDto, QueryDto } from 'lib/misc.dto'
 import { UserDto } from 'users/dto'
 @UseGuards(JwtAuthGuard)

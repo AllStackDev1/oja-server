@@ -7,7 +7,7 @@ import {
   HttpException
 } from '@nestjs/common'
 
-import { JwtAuthGuard } from 'auth/jwt-auth.guard'
+import { JwtAuthGuard } from 'jwt-auth/jwt-auth.guard'
 import { QueuesService } from './queues.service'
 import { IDPayloadDto } from 'lib/misc.dto'
 
