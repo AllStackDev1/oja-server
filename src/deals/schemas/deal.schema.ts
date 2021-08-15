@@ -17,28 +17,51 @@ export class Deal {
   })
   user: User
 
-  @Prop({ required: true })
+  @Prop({
+    required: true
+  })
   type: string
 
-  @Prop({ type: MongooseSchema.Types.Decimal128, required: true })
+  @Prop({
+    type: MongooseSchema.Types.Decimal128,
+    required: true
+  })
   rate: Types.Decimal128
 
-  @Prop({ type: MongooseSchema.Types.Decimal128, required: true })
+  @Prop({
+    type: MongooseSchema.Types.Decimal128,
+    required: true
+  })
   transactionFee: Types.Decimal128
 
-  @Prop({ type: MongooseSchema.Types.Decimal128, required: true })
+  @Prop({
+    type: MongooseSchema.Types.Decimal128,
+    required: true
+  })
   settlementFee: Types.Decimal128
 
-  @Prop({ type: DetailsSchema, required: true })
+  @Prop({
+    type: DetailsSchema,
+    required: true
+  })
   debit: Details
 
-  @Prop({ type: DetailsSchema, required: true })
+  @Prop({
+    type: DetailsSchema,
+    required: true
+  })
   credit: Details
 
-  @Prop({ type: [TransactionSchema] })
+  @Prop({
+    type: [TransactionSchema]
+  })
   transactions: Transaction[]
 
-  @Prop({ type: String, enum: DealStatusEnum, default: DealStatusEnum.PENDING })
+  @Prop({
+    type: String,
+    enum: DealStatusEnum,
+    default: DealStatusEnum.PENDING
+  })
   status: string
 }
 

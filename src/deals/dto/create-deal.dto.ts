@@ -11,18 +11,38 @@ import {
   IsNotEmptyObject
 } from 'class-validator'
 
+export class BankInfo {
+  @IsNotEmpty()
+  @IsString()
+  readonly name: string
+
+  @IsOptional()
+  @IsNotEmpty()
+  @IsString()
+  readonly code: string
+
+  @IsOptional()
+  @IsNotEmpty()
+  @IsString()
+  readonly swiftCode: string
+
+  @IsOptional()
+  @IsNotEmpty()
+  @IsString()
+  readonly routingNumber: string
+}
+
 export class AccountDetails {
   @IsNotEmpty()
   @IsNumber()
   readonly amount: Decimal128 | number
 
-  @IsNotEmpty()
-  @IsString()
-  readonly bankName: string
-
-  @IsOptional()
-  @IsString()
-  readonly swiftCode: string
+  @IsNotEmptyObject()
+  @ValidateNested()
+  @IsDefined()
+  @IsObject()
+  @Type(() => BankInfo)
+  readonly bank: BankInfo
 
   @IsNotEmpty()
   @IsString()

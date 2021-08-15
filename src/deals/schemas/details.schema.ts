@@ -1,16 +1,17 @@
 import { Types, Schema as MongooseSchema } from 'mongoose'
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
+import { BankSchema, Bank } from './bank.schema'
 
 @Schema({ versionKey: false, timestamps: false })
 export class Details {
   @Prop()
   _id: 0
 
-  @Prop()
-  swiftCode: string
-
-  @Prop({ required: true })
-  bankName: string
+  @Prop({
+    type: BankSchema,
+    required: true
+  })
+  bank: Bank
 
   @Prop({ required: true })
   accountName: string
@@ -18,7 +19,10 @@ export class Details {
   @Prop({ required: true })
   accountNumber: string
 
-  @Prop({ type: MongooseSchema.Types.Decimal128, required: true })
+  @Prop({
+    type: MongooseSchema.Types.Decimal128,
+    required: true
+  })
   amount: Types.Decimal128
 }
 
