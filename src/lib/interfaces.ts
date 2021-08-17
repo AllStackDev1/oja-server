@@ -35,6 +35,12 @@ export interface IUser extends Document {
   updatedAt: Date
 }
 
+export interface IToken extends Document {
+  user: IUser
+  token: string
+  refreshToken: string
+}
+
 export interface GetUserByPayloadStatus {
   user: Record<string, undefined>
   expiresIn: number

@@ -4,8 +4,8 @@ import { InjectModel } from '@nestjs/mongoose'
 import * as pluralize from 'pluralize'
 
 import { CrudService } from 'lib/crud.service'
-import { CurrenciesService } from 'currencies/currencies.service'
 import { QueuesService } from 'queues/queues.service'
+import { CurrenciesService } from 'currencies/currencies.service'
 
 import {
   DealStatusEnum,

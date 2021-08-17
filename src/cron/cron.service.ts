@@ -6,7 +6,7 @@ import { QueuesService } from 'queues/queues.service'
 @Injectable()
 export class CronsService {
   constructor(private readonly queuesService: QueuesService) {
-    this.runEvery30Seconds()
+    // this.runEvery30Seconds()
   }
 
   runEvery30Seconds = () => {
