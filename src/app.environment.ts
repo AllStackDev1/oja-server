@@ -30,3 +30,7 @@ export const googleSecret = process.env[`${NODE_ENV}_GOOGLE_SECRET`]
 
 export const facebookId = process.env[`${NODE_ENV}_FACEBOOK_ID`]
 export const facebookSecret = process.env[`${NODE_ENV}_FACEBOOK_SECRET`]
+
+export const plaidClientId = process.env[`${NODE_ENV}_PLAID_CLIENT_ID`]
+export const plaidEnv = process.env[`${NODE_ENV}_PLAID_ENV`]
+export const plaidSecret = process.env[`${NODE_ENV}_PLAID_SECRET`]

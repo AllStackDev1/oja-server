@@ -26,9 +26,11 @@ export class GoogleOauthStrategy extends PassportStrategy(Strategy, 'google') {
       $or: [{ googleId: id }, { email: emails[0].value }]
     })
     if (data) {
-      data.googleId = id
-      data.avatar = photos[0].value
-      await data.save()
+      if (!data.googleId && !data.avatar) {
+        data.googleId = id
+        data.avatar = photos[0].value
+        await data.save()
+      }
       return data
     } else {
       return {

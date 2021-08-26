@@ -27,9 +27,11 @@ export class FacebookStrategy extends PassportStrategy(Strategy, 'facebook') {
       $or: [{ facebookId: id }, { email: emails[0].value }]
     })
     if (data) {
-      data.facebookId = id
-      data.avatar = photos[0].value
-      await data.save()
+      if (!data.facebookId && !data.avatar) {
+        data.facebookId = id
+        data.avatar = photos[0].value
+        await data.save()
+      }
       return data
     } else {
       return {

@@ -1,10 +1,4 @@
-import {
-  IsArray,
-  IsString,
-  IsDefined,
-  IsOptional,
-  ValidateNested
-} from 'class-validator'
+import { IsString, IsDefined, IsOptional } from 'class-validator'
 import { PartialType } from '@nestjs/mapped-types'
 
 import { DealStatusEnum } from 'lib/interfaces'

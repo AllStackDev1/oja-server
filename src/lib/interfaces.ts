@@ -152,6 +152,22 @@ export interface IQueue extends Document {
   isProcessing: boolean
 }
 
+export enum GatewayTypeEnum {
+  PLAID = 'PLAID',
+  OKRA = 'OKRA'
+}
+export interface IGateway extends Document {
+  user: IUser
+  plaid?: {
+    itemId: string
+    accessToken: string
+  }
+  okra?: {
+    itemId: string
+    accessToken: string
+  }
+}
+
 export interface IAny {
   [key: string]: string
 }

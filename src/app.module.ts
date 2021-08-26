@@ -18,6 +18,7 @@ import { CronsModule } from './cron/cron.module'
 import { DealsModule } from './deals/deals.module'
 import { QueuesModule } from './queues/queues.module'
 import { TokensModule } from './tokens/tokens.module'
+import { GatewayModule } from './gateway/gateway.module'
 import { JwtAuthModule } from './jwt-auth/jwt-auth.module'
 import { CurrenciesModule } from './currencies/currencies.module'
 import { GoogleOauthModule } from './google-oauth/google-oauth.module'
@@ -41,6 +42,7 @@ import {
     TokensModule,
     QueuesModule,
     JwtAuthModule,
+    GatewayModule,
     CurrenciesModule,
     GoogleOauthModule,
     FacebookOauthModule,
