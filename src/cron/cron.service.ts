@@ -13,9 +13,8 @@ export class CronsService {
     // Scheduler.scheduleJob(CronExpression.EVERY_MINUTE, () => {
     //   this.queuesService._exchangeJob()
     // })
-
-    Scheduler.scheduleJob(CronExpression.EVERY_5_SECONDS, () => {
-      this.gmailScrapperService.__main__()
-    })
+    // Scheduler.scheduleJob(CronExpression.EVERY_5_SECONDS, () => {
+    //   this.gmailScrapperService.__main__()
+    // })
   }
 }
