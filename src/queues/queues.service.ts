@@ -46,8 +46,8 @@ export class QueuesService extends CrudService<
 
         // pop(pick) the first item in each deals array
         // to perform a transaction on each
-        this._transact(e1.id, e1.deals[0], e2.deals[0])
-        this._transact(e2.id, e2.deals[0], e1.deals[0])
+        await this._transact(e1.id, e1.deals[0], e2.deals[0])
+        await this._transact(e2.id, e2.deals[0], e1.deals[0])
       } else {
         this.logger.debug('Could not process exchange...')
       }
@@ -68,18 +68,22 @@ export class QueuesService extends CrudService<
         sender.transactions.reduce((a, b) => {
           return (b.type === TransactionTypeEnum.SENT && a + +b.amount) || a
         }, 0)
+
       this.logger.debug(
         `Debitable amount left determined as ${debitableAmountLeft}...`
       )
+
       // determine the creditable amount left from the receiver
       const creditableAmountLeft =
         +receiver.credit.amount -
         receiver.transactions.reduce((a, b) => {
           return (b.type === TransactionTypeEnum.RECEIVED && a + +b.amount) || a
         }, 0)
+
       this.logger.debug(
         `Creditable amount left determined as ${creditableAmountLeft}...`
       )
+
       if (creditableAmountLeft <= debitableAmountLeft) {
         // send creditable amount left as the amount to debit from the sender to the receiver
         // this receiver(deal) is fulfilled and needs to be remove from queue
@@ -87,21 +91,23 @@ export class QueuesService extends CrudService<
           isProcessing: false,
           $pop: { deals: -1 }
         })
+
         // create transaction record for receiver
         await this.dealsService.addTransaction(
           receiver.id,
           DealStatusEnum.COMPLETED,
           {
-            type: TransactionTypeEnum.RECEIVED,
             user: sender.user._id,
-            amount: creditableAmountLeft
+            amount: creditableAmountLeft,
+            type: TransactionTypeEnum.RECEIVED
           }
         )
+
         // create transaction record for sender
         await this.dealsService.addTransaction(sender._id, null, {
-          type: TransactionTypeEnum.SENT,
           user: receiver.user._id,
-          amount: creditableAmountLeft
+          amount: creditableAmountLeft,
+          type: TransactionTypeEnum.SENT
         })
 
         this.logger.debug(`Deal ${receiver.id} is now fulfilled`)

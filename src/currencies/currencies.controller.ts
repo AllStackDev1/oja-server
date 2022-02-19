@@ -22,16 +22,8 @@ import { IDPayloadDto, QueryDto } from 'lib/misc.dto'
 @Controller('currencies')
 export class CurrenciesController {
   constructor(private readonly service: CurrenciesService) {}
-  /**
-   * @description req.body.payload contains the fields required to create a user record
-   * @param payload.code
-   * @param payload.name
-   * @param payload.symbol
-   * @param payload.flag
-   * @param payload.rates
-   * @returns HTTP response
-   */
-  // @UseGuards(JwtAuthGuard)
+
+  @UseGuards(JwtAuthGuard)
   @Post()
   async create(@Body() body: CreateCurrencyDto) {
     const result = await this.service.create(body)
@@ -41,12 +33,6 @@ export class CurrenciesController {
     return result
   }
 
-  /**
-   * @description Payload may be null it will fetch all records
-   * @param payload.status
-   * @param payload.name
-   * @returns HTTP response
-   */
   @Get()
   async findByPayload(@Query() payload: QueryDto) {
     const result = await this.service.find(JSON.parse(payload.q || '{}'))
@@ -66,7 +52,7 @@ export class CurrenciesController {
     return result
   }
 
-  // @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Patch(':id')
   async update(@Param() params: IDPayloadDto, @Body() body: UpdateCurrencyDto) {
     const result = await this.service.update(params.id, body)

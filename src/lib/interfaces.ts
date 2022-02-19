@@ -153,19 +153,9 @@ export interface IQueue extends Document {
 }
 
 export enum GatewayTypeEnum {
+  DWOLLA = 'DWOLLA',
   PLAID = 'PLAID',
   OKRA = 'OKRA'
-}
-export interface IGateway extends Document {
-  user: IUser
-  plaid?: {
-    itemId: string
-    accessToken: string
-  }
-  okra?: {
-    itemId: string
-    accessToken: string
-  }
 }
 
 export interface IAny {

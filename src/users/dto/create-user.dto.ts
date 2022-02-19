@@ -10,7 +10,8 @@ import {
   IsOptional,
   IsNotEmptyObject,
   ValidateNested,
-  IsDefined
+  IsDefined,
+  IsPostalCode
 } from 'class-validator'
 import { Type } from 'class-transformer'
 
@@ -22,6 +23,10 @@ export class Address {
   @IsString()
   @IsOptional()
   readonly city?: string
+
+  @IsOptional()
+  @IsPostalCode()
+  readonly postalCode?: string
 
   @IsString()
   @IsOptional()

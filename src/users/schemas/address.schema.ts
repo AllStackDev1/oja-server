@@ -14,6 +14,9 @@ export class Address {
   @Prop({ trim: true })
   state: string
 
+  @Prop({ trim: true })
+  postalCode: string
+
   @Prop({ trim: true, required: true })
   country: string
 }

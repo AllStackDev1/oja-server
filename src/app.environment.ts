@@ -27,10 +27,10 @@ export const termiiId = process.env[`${NODE_ENV}_TERMII_SENDER_ID`]
 
 export const googleId = process.env[`${NODE_ENV}_GOOGLE_ID`]
 export const googleSecret = process.env[`${NODE_ENV}_GOOGLE_SECRET`]
+export const googleServiceClientEmail =
+  process.env[`${NODE_ENV}_GOOGLE_SERVICE_CLIENT_EMAIL`]
+export const googleServicePrivateKey =
+  process.env[`${NODE_ENV}_GOOGLE_SERVICE_PRIVATE_KEY`]
 
 export const facebookId = process.env[`${NODE_ENV}_FACEBOOK_ID`]
 export const facebookSecret = process.env[`${NODE_ENV}_FACEBOOK_SECRET`]
-
-export const plaidClientId = process.env[`${NODE_ENV}_PLAID_CLIENT_ID`]
-export const plaidEnv = process.env[`${NODE_ENV}_PLAID_ENV`]
-export const plaidSecret = process.env[`${NODE_ENV}_PLAID_SECRET`]
