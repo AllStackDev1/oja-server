@@ -1,2 +1,2 @@
 $ cat Procfile
-web: yarn start:staging
+web: yarn start:prod

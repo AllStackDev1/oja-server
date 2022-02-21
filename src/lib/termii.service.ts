@@ -1,5 +1,7 @@
 // dependencies
-import { HttpService, Injectable } from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
+import { HttpService } from '@nestjs/axios'
+import { AxiosRequestHeaders } from 'axios'
 
 // environment variables
 import { termiiKey, termiiId } from 'app.environment'
@@ -10,10 +12,11 @@ import { ITermiiVerifyOTP } from 'lib/interfaces'
 @Injectable()
 export class TermiiService {
   private _url: string
-  private _headers: Record<string, Array<string>>
+  private _headers: AxiosRequestHeaders
   constructor(private httpService: HttpService) {
     this._url = 'https://termii.com/api/sms/otp'
-    this._headers = { 'Content-Type': ['application/json', 'application/json'] }
+    // this._headers = { 'Content-Type': ['application/json', 'application/json'] }
+    this._headers = { 'Content-Type': 'application/json' }
   }
 
   /**
@@ -64,7 +67,6 @@ export class TermiiService {
         }
       )
       .toPromise()
-
     return response.data
   }
 }

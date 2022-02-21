@@ -1,5 +1,6 @@
 import { JwtModule } from '@nestjs/jwt'
-import { HttpModule, Module } from '@nestjs/common'
+import { Module } from '@nestjs/common'
+import { HttpModule } from '@nestjs/axios'
 
 import { FacebookOauthController } from './facebook-oauth.controller'
 import { FacebookStrategy } from './facebook-oauth.strategy'

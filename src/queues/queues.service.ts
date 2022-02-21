@@ -109,7 +109,7 @@ export class QueuesService extends CrudService<
           amount: creditableAmountLeft,
           type: TransactionTypeEnum.SENT
         })
-
+        // TODO: send email notification of transaction performed
         this.logger.debug(`Deal ${receiver.id} is now fulfilled`)
       } else {
         // send debitable amount left as the amount to debit from the sender to the receiver
@@ -130,6 +130,7 @@ export class QueuesService extends CrudService<
             amount: debitableAmountLeft
           }
         )
+        // TODO: send email notification of transaction performed
         this.logger.debug(`Deal ${receiver.id} is yet to be fulfilled`)
       }
     } catch (err) {

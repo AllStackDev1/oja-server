@@ -53,25 +53,25 @@ import {
     MongooseModule.forRootAsync({
       useFactory: async () => ({
         uri: dbUrl + '/' + dbName + '?retryWrites=true&w=majority',
-        useCreateIndex: true,
         useNewUrlParser: true,
-        useFindAndModify: false,
         useUnifiedTopology: true
       })
     }),
     MailerModule.forRoot({
       transport: {
-        host: smtpHost,
-        port: smtpPort,
         secure: true,
-        auth: { user: smtpUser, pass: smtpPass }
+        host: smtpHost,
+        auth: { user: smtpPort, pass: smtpPass }
       },
       defaults: {
         from: `"Oj'a" ${smtpUser}`
       },
+      // preview: ENV === 'DEV',
       template: {
-        dir: process.cwd() + '/templates/',
-        adapter: new HandlebarsAdapter(),
+        dir: process.cwd() + '/templates',
+        adapter: new HandlebarsAdapter({
+          // multiple: (a, b) => getFormattedMoney(a * b),
+        }),
         options: {
           strict: true
         }

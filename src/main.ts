@@ -1,5 +1,5 @@
 import 'dotenv/config'
-import * as helmet from 'helmet'
+import helmet from 'helmet'
 import { NestFactory } from '@nestjs/core'
 import { ValidationPipe, Logger } from '@nestjs/common'
 import { AppModule } from './app.module'
@@ -9,7 +9,11 @@ async function bootstrap() {
   const logger = new Logger('Bootstrap')
   const app = await NestFactory.create(AppModule, { cors: true })
   app.useGlobalPipes(new ValidationPipe({ transform: true }))
-  app.use(helmet())
+  app.use(
+    helmet({
+      contentSecurityPolicy: false
+    })
+  )
   await app.listen(port)
   logger.log(`🪐🔥 App listening on port http://localhost:${port} 🪐🔥`)
 }

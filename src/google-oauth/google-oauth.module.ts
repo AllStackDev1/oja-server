@@ -1,5 +1,6 @@
 import { JwtModule } from '@nestjs/jwt'
-import { HttpModule, Module } from '@nestjs/common'
+import { Module } from '@nestjs/common'
+import { HttpModule } from '@nestjs/axios'
 
 import { GoogleOauthController } from './google-oauth.controller'
 import { GoogleOauthStrategy } from './google-oauth.strategy'
