@@ -155,7 +155,7 @@ export class QueuesService extends CrudService<
 
   async _exchangeJob() {
     try {
-      this.logger.debug('Processing Queues in progress...')
+      this.logger.debug('Processing deals in queues...')
       const exchanges: IQueue[] = await this.model
         .find({ isProcessing: false })
         .populate('deals')

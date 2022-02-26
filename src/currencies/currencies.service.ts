@@ -29,7 +29,11 @@ export class CurrenciesService extends CrudService<
     try {
       response.data = await this.model
         .find(payload || {})
-        .populate({ path: 'rates.currency' })
+        .populate({ path: 'rates.currency', match: { status: true } })
+        .lean()
+      response.data.forEach(c => {
+        c.rates = c.rates.filter(r => r.currency)
+      })
       response.message = `${pluralize(
         this.name.toLowerCase(),
         response.data.length,

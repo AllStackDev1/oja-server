@@ -2,6 +2,7 @@ import {
   Get,
   Post,
   Body,
+  Patch,
   Param,
   Query,
   Delete,
@@ -26,12 +27,6 @@ export class DealsController {
 
   /**
    * @description req.body.payload contains the fields required to create a user record
-   * @param payload.user
-   * @param payload.rate
-   * @param payload.charges
-   * @param payload.credit
-   * @param payload.debit
-   * @returns HTTP response
    */
   @UsePipes(new ValidationPipe({ transform: true }))
   @Post()
@@ -47,14 +42,19 @@ export class DealsController {
     return result
   }
 
+  @Patch(':id/confirm-interac-funding')
+  public async processInterac(@Param() params: IDPayloadDto) {
+    const result = await this.service.processInterac(params.id)
+    if (!result.success) {
+      throw new HttpException(result.message, HttpStatus.BAD_REQUEST)
+    }
+    return result
+  }
+
   /**
    * @description
    * This method handles the http request for get:deals, it returns
    * deals with it latest transaction. The result also depends on the payload query
-   * @typedef {string} DealStatusEnum
-   * @enum {(DealStatusEnum)}
-   * @param {DealStatusEnum} payload.status
-   * @returns Response payload
    */
   @Get()
   async findByPayload(

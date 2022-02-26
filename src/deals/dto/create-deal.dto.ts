@@ -37,20 +37,20 @@ export class AccountDetails {
   @IsNumber()
   readonly amount: Decimal128 | number
 
-  @IsNotEmptyObject()
-  @ValidateNested()
-  @IsDefined()
-  @IsObject()
-  @Type(() => BankInfo)
-  readonly bank: BankInfo
+  // @IsNotEmptyObject()
+  // @ValidateNested()
+  // @IsDefined()
+  // @IsObject()
+  // @Type(() => BankInfo)
+  // readonly bank: BankInfo
 
-  @IsNotEmpty()
-  @IsString()
-  readonly accountName: string
+  // @IsNotEmpty()
+  // @IsString()
+  // readonly accountName: string
 
-  @IsNotEmpty()
-  @IsString()
-  readonly accountNumber: string
+  // @IsNotEmpty()
+  // @IsString()
+  // readonly accountNumber: string
 }
 
 export class CreateDealDto {
@@ -65,6 +65,9 @@ export class CreateDealDto {
   @IsNotEmpty()
   @IsString()
   readonly type: string
+
+  @IsString()
+  readonly interacName: string
 
   @IsNotEmpty()
   @IsNumber()

@@ -61,7 +61,7 @@ export class JwtAuthService {
         const otpResponse = await this.termiiService.sendOtp(
           newUser.phoneNumber
         )
-        response.data = newUser
+        // response.data = newUser
         response.otpResponse = otpResponse
       } else {
         throw new Error(message)

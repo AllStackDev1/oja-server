@@ -9,6 +9,5 @@ export class CreateQueueDto {
 
   @IsNotEmpty()
   @IsDefined()
-  @IsString()
   deals: ObjectId[]
 }

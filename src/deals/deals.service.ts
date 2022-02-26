@@ -6,10 +6,11 @@ import * as pluralize from 'pluralize'
 import { CrudService } from 'lib/crud.service'
 import { QueuesService } from 'queues/queues.service'
 import { CurrenciesService } from 'currencies/currencies.service'
+import { GmailScrapperService } from 'gmail-scrapper/gmail-scrapper.service'
 
 import {
-  DealStatusEnum,
   IDeal,
+  DealStatusEnum,
   ResponsePayload,
   TransactionTypeEnum
 } from 'lib/interfaces'
@@ -29,23 +30,48 @@ export class DealsService extends CrudService<
     protected readonly model: Model<IDeal>,
     private readonly currenciesService: CurrenciesService,
     @Inject(forwardRef(() => QueuesService))
-    private readonly queuesService: QueuesService
+    private readonly queuesService: QueuesService,
+    private readonly gmailScrapperService: GmailScrapperService
   ) {
     super(model)
   }
 
-  async create(payload: CreateDealDto) {
-    const res1 = await super.create(payload)
-    if (res1.success) {
-      const res2 = await this.queuesService._addDeal(
-        res1.data.type,
-        res1.data._id
-      )
-      if (!res2.success) {
-        console.log(res2.message)
-      }
+  async processInterac(id: ObjectId) {
+    let response: ResponsePayload<any, string> = {
+      success: true
     }
-    return res1
+    try {
+      const { auth, data } = await this.gmailScrapperService.__main__()
+      if (data?.length) {
+        const doc: IDeal = await this.model.findById(id)
+
+        const found = data.find(
+          d =>
+            d.name === doc.interacName && d.amount * 100 === +doc.debit.amount
+        )
+
+        if (found && doc.status === DealStatusEnum.PENDING) {
+          this.gmailScrapperService.markMessageRead(found.msgId, auth)
+          await this.queuesService._addDeal(doc.type, doc._id)
+          doc.status = DealStatusEnum.PROCESSING
+          await doc.save()
+          response.message = 'Deal is now been processed'
+        } else {
+          response = {
+            success: false,
+            message: 'Failed to verify, please try again after some time'
+          }
+        }
+      } else {
+        response = {
+          success: false,
+          message: 'Failed to verify, please try again after some time'
+        }
+      }
+    } catch (err) {
+      response = { success: false, message: err.message }
+    }
+    return response
   }
 
   async addTransaction(

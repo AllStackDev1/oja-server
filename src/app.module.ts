@@ -19,7 +19,6 @@ import { UsersModule } from 'users/users.module'
 import { CronsModule } from './cron/cron.module'
 import { DealsModule } from './deals/deals.module'
 import { QueuesModule } from './queues/queues.module'
-import { TokensModule } from './tokens/tokens.module'
 import { JwtAuthModule } from './jwt-auth/jwt-auth.module'
 import { CurrenciesModule } from './currencies/currencies.module'
 import { GoogleOauthModule } from './google-oauth/google-oauth.module'
@@ -41,7 +40,6 @@ import {
     UsersModule,
     DealsModule,
     CronsModule,
-    TokensModule,
     QueuesModule,
     JwtAuthModule,
     CurrenciesModule,

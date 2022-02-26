@@ -18,6 +18,12 @@ export class Deal {
   user: User
 
   @Prop({
+    type: String
+  })
+  interacName: string
+
+  @Prop({
+    type: String,
     required: true
   })
   type: string

@@ -81,6 +81,9 @@ export interface ICurrency extends Document {
   name: string
   code: string
   symbol: string
+  flag: string
+  rates: IRate[]
+  status: boolean
 }
 
 export interface IPhone extends Document {
@@ -89,8 +92,8 @@ export interface IPhone extends Document {
 }
 
 export interface IRate extends Document {
-  name: string
-  rate: Decimal128 | number
+  currency: ICurrency
+  value: Decimal128 | number
 }
 
 export interface ICountry extends Document {
@@ -134,6 +137,7 @@ export interface IDeal extends Document {
   _id: ObjectId
   user: IUser
   type: string
+  interacName: string
   rate: Decimal128 | number
   transactionFee: Decimal128 | number
   settlementFee: Decimal128 | number
