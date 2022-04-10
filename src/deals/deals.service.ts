@@ -49,13 +49,19 @@ export class DealsService extends CrudService<
           d =>
             d.name === doc.interacName && d.amount * 100 === +doc.debit.amount
         )
+        console.log(found)
 
-        if (found && doc.status === DealStatusEnum.PENDING) {
-          this.gmailScrapperService.markMessageRead(found.msgId, auth)
-          await this.queuesService._addDeal(doc.type, doc._id)
-          doc.status = DealStatusEnum.PROCESSING
-          await doc.save()
-          response.message = 'Deal is now been processed'
+        if (found) {
+          if (doc.status === DealStatusEnum.PENDING) {
+            await this.queuesService._addDeal(doc.type, doc._id)
+            doc.status = DealStatusEnum.PROCESSING
+            await doc.save()
+            await this.gmailScrapperService.markMessageRead(found.msgId, auth)
+            console.log('first')
+            response.message = 'Deal is now been processed'
+          } else {
+            response.message = 'Deal already been processed'
+          }
         } else {
           response = {
             success: false,
@@ -68,6 +74,24 @@ export class DealsService extends CrudService<
           message: 'Failed to verify, please try again after some time'
         }
       }
+    } catch (err) {
+      response = { success: false, message: err.message }
+    }
+    return response
+  }
+
+  async processSendCash(id: ObjectId) {
+    let response: ResponsePayload<any, string> = {
+      success: true
+    }
+    try {
+      const doc: IDeal = await this.model.findByIdAndUpdate(
+        id,
+        { status: DealStatusEnum.PROCESSING },
+        { new: true }
+      )
+      await this.queuesService._addDeal(doc.type, doc._id)
+      response.message = 'Deal is now been processed'
     } catch (err) {
       response = { success: false, message: err.message }
     }
@@ -214,6 +238,7 @@ export class DealsService extends CrudService<
           return {
             _id: doc._id,
             type: doc.type,
+            status: doc.status,
             rate: +doc.rate,
             createdAt: doc.createdAt,
             progress: +parseFloat(

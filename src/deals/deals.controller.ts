@@ -51,6 +51,15 @@ export class DealsController {
     return result
   }
 
+  @Patch(':id/send-cash-pay')
+  public async processSendCash(@Param() params: IDPayloadDto) {
+    const result = await this.service.processSendCash(params.id)
+    if (!result.success) {
+      throw new HttpException(result.message, HttpStatus.BAD_REQUEST)
+    }
+    return result
+  }
+
   /**
    * @description
    * This method handles the http request for get:deals, it returns

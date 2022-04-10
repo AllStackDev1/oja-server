@@ -141,11 +141,18 @@ export class QueuesService extends CrudService<
   _addDeal = async (type: string, dealId: ObjectId) => {
     let response = { success: true, message: null }
     try {
-      await this.model.findOneAndUpdate(
-        { type },
-        { $push: { deals: dealId } },
-        { upsert: true, setDefaultsOnInsert: true }
-      )
+      const checker = await this.model.findOne({
+        type,
+        deals: { $in: [dealId] }
+      })
+
+      if (!checker) {
+        await this.model.findOneAndUpdate(
+          { type },
+          { $push: { deals: dealId } },
+          { upsert: true, setDefaultsOnInsert: true }
+        )
+      }
     } catch (err) {
       response = { success: false, message: err.message }
     }
